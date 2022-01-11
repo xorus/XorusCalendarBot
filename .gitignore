@@ -1,0 +1,5 @@
+/XorusCalendarBot/bin/
+/XorusCalendarBot/obj/
+.idea
+*.DotSettings.user
+config.yaml

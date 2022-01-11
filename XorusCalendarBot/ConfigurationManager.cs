@@ -8,8 +8,12 @@ public class ConfigurationManager
 {
     public AppConfig AppConfig = new();
 
+    private string _configPath = "config.yml";
+
     public ConfigurationManager()
     {
+        _configPath = Environment.GetEnvironmentVariable("CONFIG_FILE") ?? _configPath;
+        Console.WriteLine(_configPath);
         Load();
     }
 
@@ -17,12 +21,13 @@ public class ConfigurationManager
     {
         var serializer = new SerializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
         var yaml = serializer.Serialize(AppConfig);
-        await File.WriteAllTextAsync("config.yaml", yaml);
+
+        await File.WriteAllTextAsync(_configPath, yaml);
     }
 
     public void Load()
     {
-        if (!File.Exists("config.yaml"))
+        if (!File.Exists(_configPath))
         {
             Save();
         }
@@ -32,7 +37,7 @@ public class ConfigurationManager
             .Build();
         // try
         // {
-        AppConfig = deser.Deserialize<AppConfig>(File.ReadAllText("config.yaml"));
+        AppConfig = deser.Deserialize<AppConfig>(File.ReadAllText(_configPath));
         // }
         // catch (Exception e)
         // {
@@ -41,7 +46,7 @@ public class ConfigurationManager
         // Instances.Add(new InstanceConfig());
         // Save();
         // }
-        
+
         OnLoad?.Invoke(this, EventArgs.Empty);
     }
 

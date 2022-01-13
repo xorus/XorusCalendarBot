@@ -1,4 +1,8 @@
 ﻿using XorusCalendarBot;
+using XorusCalendarBot.Calendar;
+using XorusCalendarBot.Configuration;
+using XorusCalendarBot.Discord;
+using XorusCalendarBot.Scheduler;
 
 var config = new ConfigurationManager();
 var discordManager = new DiscordManager(config);
@@ -27,10 +31,7 @@ discordManager.Connect();
 AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) =>
 {
     Console.WriteLine("Exit requested");
-    foreach (var schedulerManager in schedulers)
-    {
-        schedulerManager.Scheduler.Shutdown().Wait();
-    }
+    foreach (var schedulerManager in schedulers) schedulerManager.Scheduler.Shutdown().Wait();
 
     discordManager.DisconnectSync();
 };

@@ -1,15 +1,14 @@
 ﻿using System.Collections.Immutable;
-using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
+using XorusCalendarBot.Calendar;
 
-namespace XorusCalendarBot;
+namespace XorusCalendarBot.Discord;
 
 // https://github.com/DSharpPlus/DSharpPlus/tree/master/DSharpPlus.SlashCommands
 public class SlashCommands : ApplicationCommandModule
@@ -55,7 +54,7 @@ public class SlashCommands : ApplicationCommandModule
 
         return messageText;
     }
-    
+
     [SlashCommand("next", "Displays the next event")]
     public async Task NextEvent(InteractionContext ctx,
         [Option("count", "Number of events to show, defaults to one.")]
@@ -66,6 +65,7 @@ public class SlashCommands : ApplicationCommandModule
             Console.WriteLine("Cannot find instance for guild " + ctx.Guild.Id);
             return;
         }
+
         var instance = DiscordManager.InstanceDictionary[ctx.Guild.Id];
 
         var occurrences = instance.CalendarSync.Calendar
@@ -77,9 +77,8 @@ public class SlashCommands : ApplicationCommandModule
         var messageText = occurrences.Length == 0
             ? $"\n{instance.Config.NothingPlannedMessage}"
             : Enumerable.Aggregate(occurrences, "",
-                (current, occurrence) => current + (
-                    FormatEvent(instance.Config.NextDateMessage, occurrence, occurrences.Length == 1) + "\n"
-                ));
+                (current, occurrence) =>
+                    current + FormatEvent(instance.Config.NextDateMessage, occurrence, occurrences.Length == 1) + "\n");
 
         await ctx.CreateResponseAsync(
             InteractionResponseType.ChannelMessageWithSource,
@@ -95,8 +94,9 @@ public class SlashCommands : ApplicationCommandModule
             Console.WriteLine("Cannot find instance for guild " + ctx.Guild.Id);
             return;
         }
+
         var instance = DiscordManager.InstanceDictionary[ctx.Guild.Id];
-        
+
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
         instance.CalendarSync.Refresh();
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Job done!"));

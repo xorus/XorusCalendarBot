@@ -1,19 +1,19 @@
-﻿using Ical.Net;
-using Ical.Net.CalendarComponents;
+﻿using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using XorusCalendarBot.Configuration;
 
-namespace XorusCalendarBot;
+namespace XorusCalendarBot.Calendar;
 
 public class CalendarSync
 {
     private readonly InstanceConfig _config;
-    public Calendar Calendar { get; private set; } = new();
 
     public CalendarSync(InstanceConfig config)
     {
         _config = config;
     }
+
+    public Ical.Net.Calendar Calendar { get; private set; } = new();
 
     public async void Refresh()
     {
@@ -22,14 +22,14 @@ public class CalendarSync
         try
         {
             var downloadedCalendarStream = await http.GetStreamAsync(_config.CalendarUrl);
-            var downloadedCalendar = Calendar.Load(downloadedCalendarStream);
+            var downloadedCalendar = Ical.Net.Calendar.Load(downloadedCalendarStream);
             var o = downloadedCalendar.GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(_config.MaxDays))
                 .Select(o => o.Source)
                 .Cast<CalendarEvent>()
                 .Where(e => e.Summary.ToLower().StartsWith(_config.CalendarEventPrefix.ToLower()))
                 .Distinct().ToList();
-            
-            var nextEvents = new Calendar();
+
+            var nextEvents = new Ical.Net.Calendar();
             nextEvents.Events.AddRange(o);
             Calendar = nextEvents;
             OnUpdate();

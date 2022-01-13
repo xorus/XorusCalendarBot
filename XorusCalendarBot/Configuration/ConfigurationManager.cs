@@ -1,14 +1,12 @@
-﻿using XorusCalendarBot.Configuration;
-using YamlDotNet.Serialization;
+﻿using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace XorusCalendarBot;
+namespace XorusCalendarBot.Configuration;
 
 public class ConfigurationManager
 {
+    private readonly string _configPath = "config.yml";
     public AppConfig AppConfig = new();
-
-    private string _configPath = "config.yml";
 
     public ConfigurationManager()
     {
@@ -27,25 +25,11 @@ public class ConfigurationManager
 
     public void Load()
     {
-        if (!File.Exists(_configPath))
-        {
-            Save();
-        }
-
-        var deser = new DeserializerBuilder()
+        if (!File.Exists(_configPath)) Save();
+        AppConfig = new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .Build();
-        // try
-        // {
-        AppConfig = deser.Deserialize<AppConfig>(File.ReadAllText(_configPath));
-        // }
-        // catch (Exception e)
-        // {
-        // Console.WriteLine("cannot load" + e.Message);
-        // cannot load, just start over
-        // Instances.Add(new InstanceConfig());
-        // Save();
-        // }
+            .Build()
+            .Deserialize<AppConfig>(File.ReadAllText(_configPath));
 
         OnLoad?.Invoke(this, EventArgs.Empty);
     }

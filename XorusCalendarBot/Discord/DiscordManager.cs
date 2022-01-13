@@ -1,8 +1,9 @@
 ﻿using DSharpPlus;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
+using XorusCalendarBot.Configuration;
 
-namespace XorusCalendarBot;
+namespace XorusCalendarBot.Discord;
 
 public class DiscordManager
 {
@@ -37,7 +38,7 @@ public class DiscordManager
 
         // foreach (var keyValuePair in InstanceDictionary)
         // {
-            // slash.RegisterCommands<SlashCommands>(keyValuePair.Key);
+        // slash.RegisterCommands<SlashCommands>(keyValuePair.Key);
         // }
 
         slash.RegisterCommands<SlashCommands>();

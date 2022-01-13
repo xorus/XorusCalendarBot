@@ -2,22 +2,22 @@
 using Ical.Net.CalendarComponents;
 using Quartz;
 using Quartz.Impl.Matchers;
-using XorusDiscordBot;
+using XorusCalendarBot.Discord;
 
-namespace XorusCalendarBot;
+namespace XorusCalendarBot.Scheduler;
 
 public class SchedulerManager
 {
-    private readonly Instance Instance;
     private readonly int _id;
-
-    public IScheduler Scheduler { get; private set; } = null!;
+    private readonly Instance Instance;
 
     public SchedulerManager(Instance instance, int id)
     {
         Instance = instance;
         _id = id;
     }
+
+    public IScheduler Scheduler { get; private set; } = null!;
 
     public async void Start()
     {
@@ -49,7 +49,9 @@ public class SchedulerManager
             .ForJob(rJob).Build();
         await Scheduler.ScheduleJob(rJob, rTrigger);
 
-        // var i = 0;
+#if debug
+        var i = 0;
+#endif
         foreach (var occurrence in Instance.CalendarSync.Calendar.GetOccurrences(DateTime.Now,
                      DateTime.Now + TimeSpan.FromDays(Instance.Config.MaxDays)))
         {
@@ -65,12 +67,14 @@ public class SchedulerManager
             Console.WriteLine(runAt);
             // Skip already passed event
             if (DateTime.Now > runAt) continue;
-            //
-            // if (i == 0)
-            // {
-            //     runAt = DateTime.Now + TimeSpan.FromSeconds(5);
-            //     i++;
-            // }
+
+#if debug
+            if (i == 0)
+            {
+                runAt = DateTime.Now + TimeSpan.FromSeconds(5);
+                i++;
+            }
+#endif
 
             var trigger = TriggerBuilder.Create()
                 .WithIdentity("trigger" + evt.Uid + occurrence.Period.StartTime, "events" + _id)

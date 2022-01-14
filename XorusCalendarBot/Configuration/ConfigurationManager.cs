@@ -7,6 +7,7 @@ public class ConfigurationManager
 {
     private readonly string _configPath = "config.yml";
     public AppConfig AppConfig = new();
+    public EnvConfig EnvConfig = new();
 
     public ConfigurationManager()
     {

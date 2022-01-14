@@ -8,6 +8,4 @@ public class AppConfig
     {
         Instances.Add(new InstanceConfig());
     }
-
-    public string BotToken { get; set; } = "somediscordbottoken";
 }

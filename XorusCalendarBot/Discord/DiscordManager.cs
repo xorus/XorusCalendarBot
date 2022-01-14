@@ -15,7 +15,7 @@ public class DiscordManager
         DiscordClient = new DiscordClient(
             new DiscordConfiguration
             {
-                Token = configurationManager.AppConfig.BotToken,
+                Token = configurationManager.EnvConfig.DiscordBotToken,
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.AllUnprivileged
             }

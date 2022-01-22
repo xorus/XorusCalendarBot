@@ -1,46 +1,44 @@
-﻿using XorusCalendarBot;
-using XorusCalendarBot.Calendar;
-using XorusCalendarBot.Configuration;
+﻿using FluentScheduler;
+using XorusCalendarBot;
 using XorusCalendarBot.Database;
 using XorusCalendarBot.Discord;
-using XorusCalendarBot.Scheduler;
 
-namespace XorusCalendarBot;
+Dictionary<int, Instance> instances = new();
+DiscordManager discord;
+DatabaseManager db;
 
-internal class Program
+var env = new Env();
+
+JobManager.Initialize();
+db = new DatabaseManager(env);
+discord = new DiscordManager(env);
+discord.Connect();
+
+// to re-run when changing the collection
+void CreateInstances(IEnumerable<CalendarEntity> calendarEntities)
 {
-    static void Main(string[] args)
+    foreach (var calendarEntity in calendarEntities)
     {
-        var config = new ConfigurationManager();
-
-        var db = new DatabaseManager(config.EnvConfig);
-        var discordManager = new DiscordManager(config);
-
-        var schedulers = new List<SchedulerManager>();
-
-        foreach (var configInstance in config.AppConfig.Instances)
+        // todo: update instead or destroying
+        if (instances.ContainsKey(calendarEntity.Id))
         {
-            var calendarSync = new CalendarSync(configInstance);
-            var instance = new Instance(config, configInstance, calendarSync, discordManager);
-
-            var sm = new SchedulerManager(instance);
-            schedulers.Add(sm);
-            sm.Start();
-
-            calendarSync.Refresh();
-            discordManager.InstanceDictionary.Add(configInstance.RegisterCommandsTo, instance);
-
-            config.OnLoad += (_, _) => calendarSync.Refresh();
+            var id = calendarEntity.Id;
+            instances[id].Dispose();
+            instances.Remove(id);
         }
 
-        discordManager.Connect();
-        AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) =>
-        {
-            Console.WriteLine("Exit requested");
-            foreach (var schedulerManager in schedulers) schedulerManager.Scheduler.Shutdown().Wait();
-            discordManager.DisconnectSync();
-            db.Dispose();
-        };
-        Thread.Sleep(Timeout.Infinite);
+        var instance = new Instance(calendarEntity, new CalendarSync(calendarEntity), discord, db);
+        instances.Add(instance.CalendarEntity.Id, instance);
     }
 }
+CreateInstances(db.CalendarEntities);
+
+AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) =>
+{
+    Console.WriteLine("Exit requested");
+    foreach (var instance in instances) instance.Value.Dispose();
+    JobManager.RemoveAllJobs();
+    discord.DisconnectSync();
+    db.Dispose();
+};
+Thread.Sleep(Timeout.Infinite);

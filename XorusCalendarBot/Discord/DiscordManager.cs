@@ -1,7 +1,6 @@
 ﻿using DSharpPlus;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
-using XorusCalendarBot.Configuration;
 
 namespace XorusCalendarBot.Discord;
 
@@ -10,12 +9,12 @@ public class DiscordManager
     public readonly DiscordClient DiscordClient;
     public readonly Dictionary<ulong, Instance> InstanceDictionary = new();
 
-    public DiscordManager(ConfigurationManager configurationManager)
+    public DiscordManager(Env env)
     {
         DiscordClient = new DiscordClient(
             new DiscordConfiguration
             {
-                Token = configurationManager.EnvConfig.DiscordBotToken,
+                Token = env.DiscordBotToken,
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.AllUnprivileged
             }

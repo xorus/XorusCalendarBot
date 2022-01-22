@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using DSharpPlus;
@@ -6,25 +7,24 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
-using XorusCalendarBot.Calendar;
 
 namespace XorusCalendarBot.Discord;
 
 // https://github.com/DSharpPlus/DSharpPlus/tree/master/DSharpPlus.SlashCommands
+// ReSharper disable once ClassNeverInstantiated.Global
 public class SlashCommands : ApplicationCommandModule
 {
-    // public Instance Instance { private get; set; }
+    // set via Dependency Injection
+    public DiscordManager? DiscordManager { private get; set; }
 
-    public DiscordManager DiscordManager { private get; set; }
-
-    private string ReplaceThings(string str, Dictionary<string, string> placeholders, bool escape = true)
+    private static string ReplaceThings(string str, Dictionary<string, string> placeholders, bool escape = true)
     {
         if (escape) str = Regex.Replace(str.Trim(), @"([|\\*])", @"\$1");
         return placeholders.Aggregate(str,
             (current, keyValuePair) => current.Replace(keyValuePair.Key, keyValuePair.Value));
     }
 
-    private string FormatEvent(string nextDateMessage, Occurrence next, bool allowDescription)
+    private static string FormatEvent(string nextDateMessage, Occurrence next, bool allowDescription)
     {
         var messageText = "";
         var placeholders = new Dictionary<string, string>
@@ -55,11 +55,13 @@ public class SlashCommands : ApplicationCommandModule
         return messageText;
     }
 
+    // ReSharper disable once UnusedMember.Global
     [SlashCommand("next", "Displays the next event")]
     public async Task NextEvent(InteractionContext ctx,
         [Option("count", "Number of events to show, defaults to one.")]
         long? count = null)
     {
+        Debug.Assert(DiscordManager != null, nameof(DiscordManager) + " != null");
         if (!DiscordManager.InstanceDictionary.ContainsKey(ctx.Guild.Id))
         {
             Console.WriteLine("Cannot find instance for guild " + ctx.Guild.Id);
@@ -78,7 +80,8 @@ public class SlashCommands : ApplicationCommandModule
             ? $"\n{instance.CalendarEntity.NothingPlannedMessage}"
             : Enumerable.Aggregate(occurrences, "",
                 (current, occurrence) =>
-                    current + FormatEvent(instance.CalendarEntity.NextDateMessage, occurrence, occurrences.Length == 1) + "\n");
+                    current +
+                    FormatEvent(instance.CalendarEntity.NextDateMessage, occurrence, occurrences.Length == 1) + "\n");
 
         await ctx.CreateResponseAsync(
             InteractionResponseType.ChannelMessageWithSource,
@@ -86,9 +89,11 @@ public class SlashCommands : ApplicationCommandModule
         );
     }
 
+    // ReSharper disable once UnusedMember.Global
     [SlashCommand("reload", "force reload calendar")]
     public async Task Reload(InteractionContext ctx)
     {
+        Debug.Assert(DiscordManager != null, nameof(DiscordManager) + " != null");
         if (!DiscordManager.InstanceDictionary.ContainsKey(ctx.Guild.Id))
         {
             Console.WriteLine("Cannot find instance for guild " + ctx.Guild.Id);

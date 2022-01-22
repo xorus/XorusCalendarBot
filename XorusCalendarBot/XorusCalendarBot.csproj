@@ -11,9 +11,9 @@
     <ItemGroup>
       <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01056" />
       <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01056" />
+      <PackageReference Include="FluentScheduler" Version="5.5.1" />
       <PackageReference Include="Ical.Net" Version="4.2.0" />
       <PackageReference Include="LiteDB" Version="5.0.11" />
-      <PackageReference Include="Quartz" Version="3.3.3" />
       <PackageReference Include="YamlDotNet" Version="11.2.1" />
     </ItemGroup>
 

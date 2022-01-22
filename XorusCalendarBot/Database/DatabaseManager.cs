@@ -1,23 +1,29 @@
 ﻿using LiteDB;
-using XorusCalendarBot.Configuration;
 
 namespace XorusCalendarBot.Database;
 
 public class DatabaseManager : IDisposable
 {
-    private readonly EnvConfig _envConfig;
     private readonly LiteDatabase _db;
 
-    public DatabaseManager(EnvConfig envConfig)
-    {
-        _envConfig = envConfig;
-        _db = new LiteDatabase(_envConfig.DatabasePath ?? "database.db");
-        var col = _db.GetCollection<CalendarEntity>("calendars");
+    public IEnumerable<CalendarEntity> CalendarEntities;
+    public readonly ILiteCollection<CalendarEntity> CalendarEntityCollection;
 
-        if (col.Count() == 0)
+    public DatabaseManager(Env env)
+    {
+        _db = new LiteDatabase(env.DatabasePath ?? "database.db");
+        CalendarEntityCollection = _db.GetCollection<CalendarEntity>("calendars");
+        if (CalendarEntityCollection.Count() == 0)
         {
-            col.Insert(new CalendarEntity());
+            CalendarEntityCollection.Insert(new CalendarEntity());
         }
+
+        CalendarEntities = CalendarEntityCollection.FindAll();
+    }
+
+    public void Update(CalendarEntity calendarEntity)
+    {
+        CalendarEntityCollection.Update(calendarEntity);
     }
 
     public void DoTheThing()
@@ -46,5 +52,6 @@ public class DatabaseManager : IDisposable
     public void Dispose()
     {
         _db.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

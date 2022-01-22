@@ -18,6 +18,7 @@ public class ConfigurationManager
 
     public async void Save()
     {
+        return;
         var serializer = new SerializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
         var yaml = serializer.Serialize(AppConfig);
 
@@ -26,6 +27,8 @@ public class ConfigurationManager
 
     public void Load()
     {
+        OnLoad?.Invoke(this, EventArgs.Empty);
+        return;
         if (!File.Exists(_configPath)) Save();
         AppConfig = new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)

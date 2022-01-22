@@ -6,11 +6,11 @@ namespace XorusCalendarBot.Calendar;
 
 public class CalendarSync
 {
-    private readonly InstanceConfig _config;
+    private readonly Database.CalendarEntity _calendarEntity;
 
-    public CalendarSync(InstanceConfig config)
+    public CalendarSync(Database.CalendarEntity calendarEntity)
     {
-        _config = config;
+        _calendarEntity = calendarEntity;
     }
 
     public Ical.Net.Calendar Calendar { get; private set; } = new();
@@ -21,12 +21,12 @@ public class CalendarSync
         using var http = new HttpClient();
         try
         {
-            var downloadedCalendarStream = await http.GetStreamAsync(_config.CalendarUrl);
+            var downloadedCalendarStream = await http.GetStreamAsync(_calendarEntity.CalendarUrl);
             var downloadedCalendar = Ical.Net.Calendar.Load(downloadedCalendarStream);
-            var o = downloadedCalendar.GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(_config.MaxDays))
+            var o = downloadedCalendar.GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(_calendarEntity.MaxDays))
                 .Select(o => o.Source)
                 .Cast<CalendarEvent>()
-                .Where(e => e.Summary.ToLower().StartsWith(_config.CalendarEventPrefix.ToLower()))
+                .Where(e => e.Summary.ToLower().StartsWith(_calendarEntity.CalendarEventPrefix.ToLower()))
                 .Distinct().ToList();
 
             var nextEvents = new Ical.Net.Calendar();
@@ -36,7 +36,7 @@ public class CalendarSync
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine("Cannot refresh " + _config.CalendarUrl + " " + e.Message);
+            Console.WriteLine("Cannot refresh " + _calendarEntity.CalendarUrl + " " + e.Message);
         }
     }
 

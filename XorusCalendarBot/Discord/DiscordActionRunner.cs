@@ -16,24 +16,25 @@ public class DiscordActionRunner : IJob
 
         _instance = (Instance)context.Scheduler.Context.Get("Instance" + instanceId);
 
-        var i = _instance.Config.NextSentence % _instance.Config.Sentences.Count;
-        _instance.Config.NextSentence = i;
-        var str = _instance.Config.Sentences[i];
-        _instance.Config.NextSentence = (i + 1) % _instance.Config.Sentences.Count;
+        var i = _instance.CalendarEntity.NextSentence % _instance.CalendarEntity.Sentences.Count;
+        _instance.CalendarEntity.NextSentence = i;
+        var str = _instance.CalendarEntity.Sentences[i];
+        _instance.CalendarEntity.NextSentence = (i + 1) % _instance.CalendarEntity.Sentences.Count;
 
-        str = _instance.Config.AvailableMentions.Aggregate(str,
+        str = _instance.CalendarEntity.AvailableMentions.Aggregate(str,
             (current, keyValuePair) => current.Replace(keyValuePair.Key, keyValuePair.Value)
         );
         str = new[] { 't', 'T', 'd', 'D', 'f', 'F', 'R' }.Aggregate(str,
             (current, format) => current.Replace($"<{format}>", $"<t:{timestamp}:{format}>")
         );
+        Console.WriteLine("runner" + _instance.CalendarEntity.ReminderChannel);
 
         await new DiscordMessageBuilder()
             .WithAllowedMention(RoleMention.All)
             .WithAllowedMention(UserMention.All)
             .WithAllowedMention(EveryoneMention.All)
             .WithContent(str)
-            .SendAsync(await GetChannel(_instance.Config.ReminderChannel));
+            .SendAsync(await GetChannel(_instance.CalendarEntity.ReminderChannel));
 
         _instance.ConfigurationManager.Save();
     }

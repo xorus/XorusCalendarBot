@@ -69,16 +69,16 @@ public class SlashCommands : ApplicationCommandModule
         var instance = DiscordManager.InstanceDictionary[ctx.Guild.Id];
 
         var occurrences = instance.CalendarSync.Calendar
-            .GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(instance.Config.MaxDays))
+            .GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(instance.CalendarEntity.MaxDays))
             .Take((int)(count ?? 1))
             .OrderBy(x => x.Period.StartTime.Date)
             .ToImmutableArray();
 
         var messageText = occurrences.Length == 0
-            ? $"\n{instance.Config.NothingPlannedMessage}"
+            ? $"\n{instance.CalendarEntity.NothingPlannedMessage}"
             : Enumerable.Aggregate(occurrences, "",
                 (current, occurrence) =>
-                    current + FormatEvent(instance.Config.NextDateMessage, occurrence, occurrences.Length == 1) + "\n");
+                    current + FormatEvent(instance.CalendarEntity.NextDateMessage, occurrence, occurrences.Length == 1) + "\n");
 
         await ctx.CreateResponseAsync(
             InteractionResponseType.ChannelMessageWithSource,

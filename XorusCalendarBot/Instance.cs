@@ -7,15 +7,15 @@ namespace XorusCalendarBot;
 public class Instance
 {
     public readonly CalendarSync CalendarSync;
-    public readonly InstanceConfig Config;
+    public readonly Database.CalendarEntity CalendarEntity;
     public readonly ConfigurationManager ConfigurationManager;
     public readonly DiscordManager DiscordManager;
 
-    public Instance(ConfigurationManager configurationManager, InstanceConfig instanceConfig, CalendarSync calendarSync,
+    public Instance(ConfigurationManager configurationManager, Database.CalendarEntity calendarEntity, CalendarSync calendarSync,
         DiscordManager discordManager)
     {
         ConfigurationManager = configurationManager;
-        Config = instanceConfig;
+        CalendarEntity = calendarEntity;
         CalendarSync = calendarSync;
         DiscordManager = discordManager;
     }

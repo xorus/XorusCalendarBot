@@ -2,10 +2,10 @@
 
 public class AppConfig
 {
-    public List<InstanceConfig> Instances = new();
+    public List<Database.CalendarEntity> Instances = new();
 
     public AppConfig()
     {
-        Instances.Add(new InstanceConfig());
+        Instances.Add(new Database.CalendarEntity());
     }
 }

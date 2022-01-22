@@ -8,16 +8,14 @@ namespace XorusCalendarBot.Scheduler;
 
 public class SchedulerManager
 {
-    private readonly int _id;
-    private readonly Instance Instance;
+    private readonly Instance _instance;
 
-    public SchedulerManager(Instance instance, int id)
+    public SchedulerManager(Instance instance)
     {
-        Instance = instance;
-        _id = id;
+        _instance = instance;
     }
 
-    public IScheduler Scheduler { get; private set; } = null!;
+    public IScheduler Scheduler { get; set; } = null!;
 
     public async void Start()
     {
@@ -26,58 +24,60 @@ public class SchedulerManager
             .BuildScheduler();
         await Scheduler.Start();
 
-        Scheduler.Context.Put("Instance" + _id, Instance);
-        Instance.CalendarSync.Updated += (_, _) => Repopulate();
+        Scheduler.Context.Put("Instance" + _instance.CalendarEntity.Id, _instance);
+        _instance.CalendarSync.Updated += (_, _) => Repopulate();
     }
 
     private async void Repopulate()
     {
-        Console.WriteLine("Calendar refreshed!" + Instance.CalendarSync.Calendar);
+        Console.WriteLine("Calendar refreshed!" + _instance.CalendarSync.Calendar);
 
         // remove old jobs
-        var refreshJob = await Scheduler.GetJobKeys(GroupMatcher<JobKey>.GroupEquals("global" + _id));
+        var refreshJob = await Scheduler.GetJobKeys(GroupMatcher<JobKey>.GroupEquals("global" + _instance.CalendarEntity.Id));
         await Scheduler.DeleteJobs(refreshJob);
-        var jobs = await Scheduler.GetJobKeys(GroupMatcher<JobKey>.GroupEquals("events" + _id));
+        var jobs = await Scheduler.GetJobKeys(GroupMatcher<JobKey>.GroupEquals("events" + _instance.CalendarEntity.Id));
         await Scheduler.DeleteJobs(jobs);
 
         var rJob = JobBuilder.Create<RefreshActionRunner>()
-            .WithIdentity("refresh", "global" + _id)
-            .UsingJobData("instanceId", _id).Build();
+            .WithIdentity("refresh", "global" + _instance.CalendarEntity.Id)
+            .UsingJobData("instanceId", _instance.CalendarEntity.Id).Build();
         var rTrigger = TriggerBuilder.Create()
-            .WithIdentity("refresh", "global" + _id)
-            .StartAt(DateTimeOffset.Now + TimeSpan.FromHours(5))
+            .WithIdentity("refresh", "global" + _instance.CalendarEntity.Id)
+            // .StartAt(DateTimeOffset.Now + TimeSpan.FromHours(5))
+            .StartAt(DateTimeOffset.Now + TimeSpan.FromSeconds(10))
             .ForJob(rJob).Build();
         await Scheduler.ScheduleJob(rJob, rTrigger);
+        Console.WriteLine(rTrigger.StartTimeUtc);
 
-#if debug
+#if DEBUG
         var i = 0;
 #endif
-        foreach (var occurrence in Instance.CalendarSync.Calendar.GetOccurrences(DateTime.Now,
-                     DateTime.Now + TimeSpan.FromDays(Instance.Config.MaxDays)))
+        foreach (var occurrence in _instance.CalendarSync.Calendar.GetOccurrences(DateTime.Now,
+                     DateTime.Now + TimeSpan.FromDays(_instance.CalendarEntity.MaxDays)))
         {
             var evt = (CalendarEvent)occurrence.Source;
             var job = JobBuilder.Create<DiscordActionRunner>()
-                .WithIdentity("event" + evt.Uid + occurrence.Period.StartTime, "events" + _id)
-                .UsingJobData("instanceId", _id)
+                .WithIdentity("event" + evt.Uid + occurrence.Period.StartTime, "events" + _instance.CalendarEntity.Id)
+                .UsingJobData("instanceId", _instance.CalendarEntity.Id)
                 .UsingJobData("timestamp", occurrence.Period.StartTime.AsUtc.Subtract(DateTime.UnixEpoch).TotalSeconds)
                 .Build();
 
-            var runAt = occurrence.Period.StartTime.Add(TimeSpan.FromSeconds(Instance.Config.ReminderOffsetSeconds))
+            var runAt = occurrence.Period.StartTime.Add(TimeSpan.FromSeconds(_instance.CalendarEntity.ReminderOffsetSeconds))
                 .Value;
-            Console.WriteLine(runAt);
-            // Skip already passed event
-            if (DateTime.Now > runAt) continue;
-
-#if debug
+#if DEBUG
             if (i == 0)
             {
                 runAt = DateTime.Now + TimeSpan.FromSeconds(5);
                 i++;
             }
+            Console.WriteLine(runAt);
 #endif
+            // Skip already passed event
+            if (DateTime.Now > runAt) continue;
+
 
             var trigger = TriggerBuilder.Create()
-                .WithIdentity("trigger" + evt.Uid + occurrence.Period.StartTime, "events" + _id)
+                .WithIdentity("trigger" + evt.Uid + occurrence.Period.StartTime, "events" + _instance.CalendarEntity.Id)
                 .StartAt(runAt)
                 .ForJob(job)
                 .Build();

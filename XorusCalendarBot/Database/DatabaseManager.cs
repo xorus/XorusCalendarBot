@@ -8,6 +8,7 @@ public class DatabaseManager : IDisposable
 
     public IEnumerable<CalendarEntity> CalendarEntities;
     public readonly ILiteCollection<CalendarEntity> CalendarEntityCollection;
+    public readonly ILiteCollection<UserEntity> Users;
 
     public DatabaseManager(Env env)
     {
@@ -19,11 +20,45 @@ public class DatabaseManager : IDisposable
         }
 
         CalendarEntities = CalendarEntityCollection.FindAll();
+
+        Users = _db.GetCollection<UserEntity>("users");
+        if (Users.Count() == 0)
+        {
+            Users.Insert(new UserEntity()
+            {
+                Guilds = new[] { 755091710501060688u, 671289826825469975u },
+                Key = "8xOwBhmEOMQq2iMo_XTXs2Sy8bdQj1rI",
+                Name = "Xorus",
+                DiscordId = 153932217591005184u
+            });
+        }
+
+#if DEBUG
+        var first = Users.FindAll().First();
+        Console.WriteLine($"> {first.Id} with key {first.Key}");
+#endif
     }
 
     public void Update(CalendarEntity calendarEntity)
     {
         CalendarEntityCollection.Update(calendarEntity);
+    }
+
+    public UserEntity? GetUser(string guid)
+    {
+        try
+        {
+            return Users.FindById(Guid.Parse(guid));
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    public List<CalendarEntity> GetUserCalendars(UserEntity user)
+    {
+        return CalendarEntities.Where(c => user.Guilds.Contains(c.RegisterCommandsTo)).ToList();
     }
 
     public void DoTheThing()

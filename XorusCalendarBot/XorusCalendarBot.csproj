@@ -11,6 +11,8 @@
     <ItemGroup>
       <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01056" />
       <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01056" />
+      <PackageReference Include="EmbedIO" Version="3.4.2" />
+      <PackageReference Include="EmbedIO.BearerToken" Version="3.4.2" />
       <PackageReference Include="FluentScheduler" Version="5.5.1" />
       <PackageReference Include="Ical.Net" Version="4.2.0" />
       <PackageReference Include="LiteDB" Version="5.0.11" />

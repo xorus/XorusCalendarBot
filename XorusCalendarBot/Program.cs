@@ -1,9 +1,10 @@
 ﻿using FluentScheduler;
 using XorusCalendarBot;
+using XorusCalendarBot.Api;
 using XorusCalendarBot.Database;
 using XorusCalendarBot.Discord;
 
-Dictionary<int, Instance> instances = new();
+Dictionary<Guid, Instance> instances = new();
 DiscordManager discord;
 DatabaseManager db;
 
@@ -13,6 +14,8 @@ JobManager.Initialize();
 db = new DatabaseManager(env);
 discord = new DiscordManager(env);
 discord.Connect();
+
+var web = new Web(env, db);
 
 // to re-run when changing the collection
 void CreateInstances(IEnumerable<CalendarEntity> calendarEntities)
@@ -31,6 +34,7 @@ void CreateInstances(IEnumerable<CalendarEntity> calendarEntities)
         instances.Add(instance.CalendarEntity.Id, instance);
     }
 }
+
 CreateInstances(db.CalendarEntities);
 
 AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) =>
@@ -39,6 +43,7 @@ AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) =>
     foreach (var instance in instances) instance.Value.Dispose();
     JobManager.RemoveAllJobs();
     discord.DisconnectSync();
+    web.Dispose();
     db.Dispose();
 };
 Thread.Sleep(Timeout.Infinite);

@@ -2,7 +2,7 @@
 
 public class CalendarEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public string CalendarEventPrefix { get; set; } = "raid night";
 
@@ -14,7 +14,7 @@ public class CalendarEntity
     public string NextDateMessage { get; set; } = "Le <t:{start}:d> de <t:{start}:t> à <t:{end}:t> :";
     public string NothingPlannedMessage { get; set; } = "Nothing is planned at the moment.";
 
-    public ulong RegisterCommandsTo { get; set; } = 755091710501060688;
+    public ulong RegisterCommandsTo { get; set; } = 671289826825469975;
 
     public Dictionary<string, string> AvailableMentions { get; set; } = new()
     {

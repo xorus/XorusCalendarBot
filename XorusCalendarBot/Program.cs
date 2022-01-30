@@ -15,7 +15,7 @@ db = new DatabaseManager(env);
 discord = new DiscordManager(env);
 discord.Connect();
 
-var web = new Web(env, db);
+var web = new Web(env, db, discord);
 
 // to re-run when changing the collection
 void CreateInstances(IEnumerable<CalendarEntity> calendarEntities)
@@ -35,7 +35,7 @@ void CreateInstances(IEnumerable<CalendarEntity> calendarEntities)
     }
 }
 
-CreateInstances(db.CalendarEntities);
+CreateInstances(db.CalendarEntityCollection.FindAll());
 
 AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) =>
 {

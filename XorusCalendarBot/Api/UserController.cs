@@ -1,22 +1,27 @@
 ﻿using EmbedIO;
 using EmbedIO.Routing;
-using EmbedIO.WebApi;
-using XorusCalendarBot.Database;
+using Swan;
+using Swan.Logging;
+using XorusCalendarBot.Discord;
 
 namespace XorusCalendarBot.Api;
 
-public class UserController : WebApiController
+public class UserController : BaseController
 {
-    private DatabaseManager _db;
-
-    public UserController(DatabaseManager db)
+    [Route(HttpVerbs.Get, "/guilds")]
+    public IEnumerable<GuildInfo> GetGuilds()
     {
-        _db = db;
+        var dm = Container.Resolve<DiscordManager>();
+        ("amogus " + GetUserFromHttpContext().Guilds.ToJson()).Info();
+        return dm.GetGuilds()
+            .Where(x => GetUserFromHttpContext().Guilds.Contains(x.Value.Id.ToString()))
+            .Select(x => new GuildInfo { Id = x.Key.ToString(), IconUrl = x.Value.IconUrl, Name = x.Value.Name });
     }
 
-    [Route(HttpVerbs.Get, "/me")]
-    public List<CalendarEntity> Me()
+    public struct GuildInfo
     {
-        return _db.CalendarEntities.ToList();
+        public string Id { get; init; }
+        public string IconUrl { get; init; }
+        public string Name { get; init; }
     }
 }

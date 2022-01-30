@@ -5,11 +5,11 @@ namespace XorusCalendarBot;
 
 public class Instance : IDisposable
 {
-    public readonly CalendarSync CalendarSync;
-    public readonly CalendarEntity CalendarEntity;
-    public readonly DiscordManager DiscordManager;
     private readonly DatabaseManager _databaseManager;
     private readonly DiscordNotifier _discordNotifier;
+    public readonly CalendarEntity CalendarEntity;
+    public readonly CalendarSync CalendarSync;
+    public readonly DiscordManager DiscordManager;
 
     public Instance(CalendarEntity calendarEntity, CalendarSync calendarSync, DiscordManager discordManager,
         DatabaseManager databaseManager)
@@ -18,11 +18,18 @@ public class Instance : IDisposable
         CalendarSync = calendarSync;
         DiscordManager = discordManager;
         _databaseManager = databaseManager;
-        _discordNotifier = new DiscordNotifier(this);
+        _discordNotifier = new DiscordNotifier(this, discordManager);
 
         calendarSync.StartAutoRefresh();
-        discordManager.InstanceDictionary.Add(CalendarEntity.RegisterCommandsTo, this);
+        // discordManager.InstanceDictionary.Add(CalendarEntity.GuildId, this);
         calendarSync.Updated += (_, _) => _discordNotifier.RegisterJobs();
+    }
+
+    public void Dispose()
+    {
+        _discordNotifier.Dispose();
+        CalendarSync.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     public void Refresh()
@@ -33,12 +40,5 @@ public class Instance : IDisposable
     public void Update()
     {
         _databaseManager.Update(CalendarEntity);
-    }
-
-    public void Dispose()
-    {
-        _discordNotifier.Dispose();
-        CalendarSync.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

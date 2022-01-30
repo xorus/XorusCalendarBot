@@ -3,3 +3,5 @@
 .idea
 *.DotSettings.user
 config.yaml
+database-log.db
+database.db

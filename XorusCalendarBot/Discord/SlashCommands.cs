@@ -62,26 +62,32 @@ public class SlashCommands : ApplicationCommandModule
         long? count = null)
     {
         Debug.Assert(DiscordManager != null, nameof(DiscordManager) + " != null");
-        if (!DiscordManager.InstanceDictionary.ContainsKey(ctx.Guild.Id))
+        if (!DiscordManager.InstanceDictionary.ContainsKey(ctx.Guild.Id.ToString()))
         {
             Console.WriteLine("Cannot find instance for guild " + ctx.Guild.Id);
             return;
         }
 
-        var instance = DiscordManager.InstanceDictionary[ctx.Guild.Id];
+        var instances = DiscordManager.InstanceDictionary[ctx.Guild.Id.ToString()];
 
-        var occurrences = instance.CalendarSync.Calendar
-            .GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(instance.CalendarEntity.MaxDays))
-            .Take((int)(count ?? 1))
-            .OrderBy(x => x.Period.StartTime.Date)
-            .ToImmutableArray();
+        var occurrences = new List<Occurrence>();
+        var nothingPlannedMessage = "";
+        var nextDateMessage = "";
+        foreach (var instance in instances)
+        {
+            nothingPlannedMessage = instance.CalendarEntity.NothingPlannedMessage;
+            nextDateMessage = instance.CalendarEntity.NextDateMessage;
+            occurrences.AddRange(instance.CalendarSync.Calendar
+                .GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(instance.CalendarEntity.MaxDays))
+                .Take((int)(count ?? 1))
+                .OrderBy(x => x.Period.StartTime.Date)
+                .ToImmutableArray());
+        }
 
-        var messageText = occurrences.Length == 0
-            ? $"\n{instance.CalendarEntity.NothingPlannedMessage}"
-            : Enumerable.Aggregate(occurrences, "",
-                (current, occurrence) =>
-                    current +
-                    FormatEvent(instance.CalendarEntity.NextDateMessage, occurrence, occurrences.Length == 1) + "\n");
+        var messageText = occurrences.Count == 0
+            ? $"\n{nothingPlannedMessage}"
+            : occurrences.Aggregate("", (current, occurrence) =>
+                current + FormatEvent(nextDateMessage, occurrence, occurrences.Count == 1) + "\n");
 
         await ctx.CreateResponseAsync(
             InteractionResponseType.ChannelMessageWithSource,
@@ -94,16 +100,16 @@ public class SlashCommands : ApplicationCommandModule
     public async Task Reload(InteractionContext ctx)
     {
         Debug.Assert(DiscordManager != null, nameof(DiscordManager) + " != null");
-        if (!DiscordManager.InstanceDictionary.ContainsKey(ctx.Guild.Id))
+        if (!DiscordManager.InstanceDictionary.ContainsKey(ctx.Guild.Id.ToString()))
         {
             Console.WriteLine("Cannot find instance for guild " + ctx.Guild.Id);
             return;
         }
 
-        var instance = DiscordManager.InstanceDictionary[ctx.Guild.Id];
-
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-        instance.CalendarSync.Refresh();
+        var instances = DiscordManager.InstanceDictionary[ctx.Guild.Id.ToString()];
+        foreach (var instance in instances) instance.CalendarSync.Refresh();
+
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Job done!"));
         Thread.Sleep(1000);
         await ctx.DeleteResponseAsync();

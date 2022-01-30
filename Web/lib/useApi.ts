@@ -2,7 +2,8 @@ import {useRecoilState} from "recoil";
 import {useAuth, userHeaders} from "./auth";
 import {useCallback, useEffect} from "react";
 import {apiUrl} from "./apiUrl";
-import {Guild, guildList, UserToken} from "./appState";
+import {guildList, UserToken} from "./appState";
+import {Guild} from "./apiObjects";
 
 export const jsonReq = async ({url, user, method = "GET", body}: {
     url: string,

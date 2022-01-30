@@ -1,4 +1,8 @@
-﻿namespace XorusCalendarBot.Database;
+﻿using Ical.Net.DataTypes;
+using LiteDB;
+using XorusCalendarBot.Cal;
+
+namespace XorusCalendarBot.Database;
 
 public class CalendarEntity
 {
@@ -22,8 +26,12 @@ public class CalendarEntity
     public int ReminderOffsetSeconds { get; set; } = -10800;
 
     public List<string> Sentences { get; set; } = new();
-
     public int NextSentence { get; set; } = 0;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public List<EventOccurrence> NextOccurrences { get; set; } = new List<EventOccurrence>();
+
+    public DateTime? LastRefresh { get; set; }
 
     public static CalendarEntity CreateDefault()
     {

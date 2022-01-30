@@ -7,6 +7,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
+using XorusCalendarBot.Cal;
 
 namespace XorusCalendarBot.Discord;
 

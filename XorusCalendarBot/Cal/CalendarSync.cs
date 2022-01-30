@@ -4,18 +4,19 @@ using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using XorusCalendarBot.Database;
 
-namespace XorusCalendarBot;
+namespace XorusCalendarBot.Cal;
 
 public sealed class CalendarSync : IDisposable
 {
-    private readonly CalendarEntity _calendarEntity;
     private readonly string _refreshJobName;
+    private readonly Instance _instance;
+    private CalendarEntity CalendarEntity => _instance.CalendarEntity;
     private bool _started;
 
-    public CalendarSync(CalendarEntity calendarEntity)
+    public CalendarSync(Instance instance)
     {
-        _calendarEntity = calendarEntity;
-        _refreshJobName = "refresh-calendar-" + _calendarEntity.Id;
+        _instance = instance;
+        _refreshJobName = "refresh-calendar-" + CalendarEntity.Id;
     }
 
     public Calendar Calendar { get; private set; } = new();
@@ -31,24 +32,33 @@ public sealed class CalendarSync : IDisposable
         using var http = new HttpClient();
         try
         {
-            var downloadedCalendarStream = await http.GetStreamAsync(_calendarEntity.CalendarUrl);
+            var downloadedCalendarStream = await http.GetStreamAsync(CalendarEntity.CalendarUrl);
             var downloadedCalendar = Calendar.Load(downloadedCalendarStream);
             var o = downloadedCalendar
-                .GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(_calendarEntity.MaxDays))
+                .GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(CalendarEntity.MaxDays))
                 .Select(o => o.Source)
                 .Cast<CalendarEvent>()
-                .Where(e => e.Summary.ToLower().StartsWith(_calendarEntity.CalendarEventPrefix.ToLower())
+                .Where(e => e.Summary.ToLower().StartsWith(CalendarEntity.CalendarEventPrefix.ToLower())
                             || e.Categories.Contains("Discord Event"))
                 .Distinct().ToList();
 
             var nextEvents = new Calendar();
             nextEvents.Events.AddRange(o);
             Calendar = nextEvents;
+
+            Console.WriteLine("refresh");
+
+            CalendarEntity.NextOccurrences = Calendar.GetOccurrences(
+                DateTime.Now, DateTime.Now + TimeSpan.FromDays(CalendarEntity.MaxDays)
+            ).Select(occurrence => occurrence.CreateFromICal(_instance)).ToList();
+            CalendarEntity.LastRefresh = DateTime.Now.ToUniversalTime();
+            _instance.Update();
+
             OnUpdate();
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine("Cannot refresh " + _calendarEntity.CalendarUrl + " " + e.Message);
+            Console.WriteLine("Cannot refresh " + CalendarEntity.CalendarUrl + " " + e.Message);
         }
     }
 
@@ -56,6 +66,7 @@ public sealed class CalendarSync : IDisposable
     {
         if (_started) return;
         _started = true;
+        Refresh();
         JobManager.AddJob(Refresh, schedule => schedule.WithName(_refreshJobName).ToRunEvery(5).Hours());
     }
 

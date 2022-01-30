@@ -1,28 +1,27 @@
-﻿using XorusCalendarBot.Database;
+﻿using Swan.DependencyInjection;
+using XorusCalendarBot.Cal;
+using XorusCalendarBot.Database;
 using XorusCalendarBot.Discord;
 
 namespace XorusCalendarBot;
 
 public class Instance : IDisposable
 {
-    private readonly DatabaseManager _databaseManager;
     private readonly DiscordNotifier _discordNotifier;
     public readonly CalendarEntity CalendarEntity;
     public readonly CalendarSync CalendarSync;
-    public readonly DiscordManager DiscordManager;
+    public readonly DependencyContainer Container;
 
-    public Instance(CalendarEntity calendarEntity, CalendarSync calendarSync, DiscordManager discordManager,
-        DatabaseManager databaseManager)
+    public Instance(DependencyContainer container, CalendarEntity calendarEntity)
     {
+        Container = container;
         CalendarEntity = calendarEntity;
-        CalendarSync = calendarSync;
-        DiscordManager = discordManager;
-        _databaseManager = databaseManager;
-        _discordNotifier = new DiscordNotifier(this, discordManager);
+        CalendarSync = new CalendarSync(this);
+        _discordNotifier = new DiscordNotifier(this);
 
-        calendarSync.StartAutoRefresh();
+        CalendarSync.StartAutoRefresh();
         // discordManager.InstanceDictionary.Add(CalendarEntity.GuildId, this);
-        calendarSync.Updated += (_, _) => _discordNotifier.RegisterJobs();
+        CalendarSync.Updated += (_, _) => _discordNotifier.RegisterJobs();
     }
 
     public void Dispose()
@@ -39,6 +38,6 @@ public class Instance : IDisposable
 
     public void Update()
     {
-        _databaseManager.Update(CalendarEntity);
+        Container.Resolve<DatabaseManager>().Update(CalendarEntity);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FluentScheduler;
+using Swan.DependencyInjection;
 using XorusCalendarBot;
 using XorusCalendarBot.Api;
 using XorusCalendarBot.Database;
@@ -17,6 +18,10 @@ discord.Connect();
 
 var web = new Web(env, db, discord);
 
+var serviceContainer = new DependencyContainer();
+serviceContainer.Register(db);
+serviceContainer.Register(discord);
+
 // to re-run when changing the collection
 void CreateInstances(IEnumerable<CalendarEntity> calendarEntities)
 {
@@ -30,7 +35,7 @@ void CreateInstances(IEnumerable<CalendarEntity> calendarEntities)
             instances.Remove(id);
         }
 
-        var instance = new Instance(calendarEntity, new CalendarSync(calendarEntity), discord, db);
+        var instance = new Instance(serviceContainer, calendarEntity);
         instances.Add(instance.CalendarEntity.Id, instance);
     }
 }

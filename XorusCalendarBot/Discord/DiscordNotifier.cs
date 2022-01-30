@@ -8,10 +8,10 @@ public class DiscordNotifier : IDisposable
     private readonly DiscordManager _discord;
     private readonly Instance _instance;
 
-    public DiscordNotifier(Instance instance, DiscordManager discord)
+    public DiscordNotifier(Instance instance)
     {
         _instance = instance;
-        _discord = discord;
+        _discord = instance.Container.Resolve<DiscordManager>();
     }
 
     public void Dispose()
@@ -27,13 +27,12 @@ public class DiscordNotifier : IDisposable
 #if DEBUG
         var i = 0;
 #endif
-        foreach (var occurrence in _instance.CalendarSync.Calendar.GetOccurrences(DateTime.Now,
-                     DateTime.Now + TimeSpan.FromDays(_instance.CalendarEntity.MaxDays)))
+        foreach (var occurrence in _instance.CalendarEntity.NextOccurrences)
         {
-            var runAt = occurrence.Period.StartTime
-                .Add(TimeSpan.FromSeconds(_instance.CalendarEntity.ReminderOffsetSeconds))
-                .Value;
-            var timestamp = occurrence.Period.StartTime.AsUtc.Subtract(DateTime.UnixEpoch).TotalSeconds;
+            // var runAt = occurrence.StartTime
+            // .Add(TimeSpan.FromSeconds(_instance.CalendarEntity.ReminderOffsetSeconds));
+            var timestamp = occurrence.StartTime.Subtract(DateTime.UnixEpoch).TotalSeconds;
+            var runAt = occurrence.NotifyTime;
 
 #if DEBUG
             if (i == 0)
@@ -62,6 +61,8 @@ public class DiscordNotifier : IDisposable
 
     private async void Notify(double timestamp)
     {
+        if (_instance.CalendarEntity.Sentences.Count == 0) return;
+
         var i = _instance.CalendarEntity.NextSentence % _instance.CalendarEntity.Sentences.Count;
         _instance.CalendarEntity.NextSentence = i;
         var str = _instance.CalendarEntity.Sentences[i];
@@ -88,6 +89,6 @@ public class DiscordNotifier : IDisposable
     private async Task<DiscordChannel> GetChannel(ulong channel)
     {
         // todo: handle channel not existing
-        return await _instance.DiscordManager.DiscordClient.GetChannelAsync(channel);
+        return await _instance.Container.Resolve<DiscordManager>().DiscordClient.GetChannelAsync(channel);
     }
 }

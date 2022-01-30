@@ -63,8 +63,7 @@ public class AuthController : BaseController
         if (!tokenResponse.IsSuccessStatusCode)
         {
             var message = "/oauth2/token cannot validate token " + tokenString;
-            (message + " token=" + tokenResponse + " request=" +
-             await tokenResponse.RequestMessage.Content.ReadAsStringAsync()).Error();
+            (message + " token=" + tokenResponse + " request=" + tokenString).Error();
             throw new HttpException(401, message);
         }
 
@@ -84,6 +83,11 @@ public class AuthController : BaseController
         var str1 = await response.Content.ReadAsStringAsync();
         // Logger.Info("/api/users/@me " + str1);
         var discordUser = JsonConvert.DeserializeObject<DiscordUser>(str1);
+        if (discordUser == null)
+        {
+            ("/users/@me: cannot deserialize user from " + str1).Error();
+            throw new HttpException(500, "/users/@me: cannot deserialize user. ");
+        }
 
         var col = Container.Resolve<DatabaseManager>().Users;
         var user = col.FindOne(x => x.DiscordId.Equals(discordUser.Id.ToString()));
@@ -92,7 +96,6 @@ public class AuthController : BaseController
 
         var guildsResponse = await authClient.GetAsync("https://discord.com/api/users/@me/guilds");
         var guildsStr = await guildsResponse.Content.ReadAsStringAsync();
-        // Logger.Info("/api/users/@me/guilds " + guildsStr);
         if (!response.IsSuccessStatusCode)
             throw new HttpException(401,
                 "/users/@me/guilds: could not list guilds. " +
@@ -105,7 +108,7 @@ public class AuthController : BaseController
             select iJustNeedTheId.id).ToArray();
         col.Update(user);
 
-        HttpContext.Redirect(Env.ClientAppHost + "/calendars.html#token=" +
+        HttpContext.Redirect(Env.ClientAppHost + "/calendars/#token=" +
                              HttpUtility.UrlEncode(CreateJwt(user, token.expires_in)));
     }
 

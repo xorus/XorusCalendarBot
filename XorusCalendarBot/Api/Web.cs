@@ -1,4 +1,5 @@
-﻿using EmbedIO;
+﻿using System.Text;
+using EmbedIO;
 using EmbedIO.Actions;
 using EmbedIO.BearerToken;
 using EmbedIO.WebApi;
@@ -11,10 +12,7 @@ namespace XorusCalendarBot.Api;
 
 public class Web : IDisposable
 {
-    private readonly DatabaseManager _db;
-    private readonly DiscordManager _discordManager;
     private readonly WebServer _server;
-    private Env _env;
 
     // public static async Task SerializationCallback(IHttpContext context, object? data)
     // {
@@ -27,10 +25,6 @@ public class Web : IDisposable
 
     public Web(Env env, DatabaseManager db, DiscordManager discordManager)
     {
-        _db = db;
-        _env = env;
-        _discordManager = discordManager;
-
         var container = new DependencyContainer();
         container.Register(discordManager);
         container.Register(db);
@@ -38,7 +32,6 @@ public class Web : IDisposable
 
         _server = new WebServer(o => o.WithUrlPrefix($"http://{env.ListenUrl}").WithMode(HttpListenerMode.EmbedIO))
             .WithLocalSessionManager();
-
         _server
             .WithCors()
             .WithBearerToken("/api/calendar", env.Secret)
@@ -48,7 +41,6 @@ public class Web : IDisposable
             .WithWebApi("/api/user", m => m.WithController(() => new UserController().WithContainer(container)));
         if (env.StaticHtmlPath != null)
             _server.WithStaticFolder("/", env.StaticHtmlPath, false);
-        _server.WithModule(new ActionModule("/", HttpVerbs.Any, ctx => ctx.SendDataAsync(new { Message = ":)" })));
 
         // Listen for state changes.
         _server.StateChanged += (s, e) => $"WebServer New State - {e.NewState}".Info();

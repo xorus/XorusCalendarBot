@@ -47,6 +47,10 @@ public class DatabaseManager : IDisposable
 
     public List<CalendarEntity> GetUserCalendars(UserEntity user)
     {
-        return CalendarEntityCollection.FindAll().Where(c => user.Guilds.Contains(c.GuildId)).ToList();
+        return CalendarEntityCollection
+            .FindAll()
+            .Where(c => user.Guilds.Contains(c.GuildId))
+            .OrderBy(c => c.CreatedAt)
+            .ToList();
     }
 }

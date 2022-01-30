@@ -1,6 +1,6 @@
-import {Guild} from "../../lib/appState";
 import {Avatar, Box, Flex, Heading} from "theme-ui";
 import React from "react";
+import {Guild} from "../../lib/apiObjects";
 
 export const GuildBanner = (props: { guild?: Guild }) => {
     if (!props.guild) return <Box>unknown guild</Box>;

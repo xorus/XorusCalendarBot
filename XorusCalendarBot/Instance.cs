@@ -8,7 +8,7 @@ namespace XorusCalendarBot;
 public class Instance : IDisposable
 {
     private readonly DiscordNotifier _discordNotifier;
-    public readonly CalendarEntity CalendarEntity;
+    public CalendarEntity CalendarEntity { get; private set; }
     public readonly CalendarSync CalendarSync;
     public readonly DependencyContainer Container;
 
@@ -24,6 +24,12 @@ public class Instance : IDisposable
         CalendarSync.Updated += (_, _) => _discordNotifier.RegisterJobs();
     }
 
+    public void Replace(CalendarEntity calendarEntity)
+    {
+        CalendarEntity = calendarEntity;
+        Refresh();
+    }
+
     public void Dispose()
     {
         _discordNotifier.Dispose();
@@ -34,6 +40,10 @@ public class Instance : IDisposable
     public void Refresh()
     {
         CalendarSync.Refresh();
+    }
+    public async Task RefreshAsync()
+    {
+        await CalendarSync.Refresh();
     }
 
     public void Update()

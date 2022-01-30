@@ -1,7 +1,7 @@
 export function apiUrl(url: string,
                        params?: { [key: string]: string | undefined },
                        replace: { [key: string]: string } = {}): string {
-    // url = "http://localhost:9750" + url;
+    url = (process.env.NEXT_PUBLIC_BASE_API_URL ?? "") + url;
 
     if (replace && Object.entries(replace).length > 0) {
         for (const key in replace) {

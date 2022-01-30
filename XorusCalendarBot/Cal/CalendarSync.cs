@@ -26,7 +26,7 @@ public sealed class CalendarSync : IDisposable
         StopAutoRefresh();
     }
 
-    public async void Refresh()
+    public async Task Refresh()
     {
         Console.WriteLine("Refreshing calendar");
         using var http = new HttpClient();
@@ -67,7 +67,7 @@ public sealed class CalendarSync : IDisposable
         if (_started) return;
         _started = true;
         Refresh();
-        JobManager.AddJob(Refresh, schedule => schedule.WithName(_refreshJobName).ToRunEvery(5).Hours());
+        JobManager.AddJob(() => Refresh(), schedule => schedule.WithName(_refreshJobName).ToRunEvery(5).Hours());
     }
 
     private void StopAutoRefresh()

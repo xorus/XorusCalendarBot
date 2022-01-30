@@ -1,14 +1,9 @@
 import {atom} from "recoil";
+import {Guild} from "./apiObjects";
 
 export interface UserToken {
     id: string;
     jwt: string;
-}
-
-export interface Guild {
-    Id: string;
-    IconUrl: string;
-    Name: string;
 }
 
 export const authState = atom<UserToken | null>({

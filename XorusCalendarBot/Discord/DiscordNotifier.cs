@@ -1,5 +1,6 @@
 ﻿using DSharpPlus.Entities;
 using FluentScheduler;
+using XorusCalendarBot.Cal;
 
 namespace XorusCalendarBot.Discord;
 
@@ -46,7 +47,7 @@ public class DiscordNotifier : IDisposable
             // Skip already passed event
             if (DateTime.Now > runAt) continue;
 
-            JobManager.AddJob(() => { Notify(timestamp); },
+            JobManager.AddJob(() => { Notify(occurrence, timestamp); },
                 schedule => schedule.WithName("discord-notify-" + _instance.CalendarEntity.Id + "-" + timestamp)
                     .ToRunOnceAt(runAt));
         }
@@ -59,14 +60,18 @@ public class DiscordNotifier : IDisposable
             JobManager.RemoveJob(b.Name);
     }
 
-    private async void Notify(double timestamp)
+    private async void Notify(EventOccurrence occurrence, double timestamp)
     {
-        if (_instance.CalendarEntity.Sentences.Count == 0) return;
+        var str = occurrence.ForcedMessage;
+        if (str == null)
+        {
+            if (_instance.CalendarEntity.Sentences.Count == 0) return;
 
-        var i = _instance.CalendarEntity.NextSentence % _instance.CalendarEntity.Sentences.Count;
-        _instance.CalendarEntity.NextSentence = i;
-        var str = _instance.CalendarEntity.Sentences[i];
-        _instance.CalendarEntity.NextSentence = (i + 1) % _instance.CalendarEntity.Sentences.Count;
+            var i = _instance.CalendarEntity.NextSentence % _instance.CalendarEntity.Sentences.Count;
+            _instance.CalendarEntity.NextSentence = i;
+            str = _instance.CalendarEntity.Sentences[i];
+            _instance.CalendarEntity.NextSentence = (i + 1) % _instance.CalendarEntity.Sentences.Count;
+        }
 
         var mentions = await _discord.GetAvailableMentions(_instance.CalendarEntity.GuildId);
         if (mentions != null) str = mentions.Aggregate(str, (current, mm) => current.Replace(mm.Name, mm.Code));

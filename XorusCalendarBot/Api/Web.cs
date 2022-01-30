@@ -3,6 +3,7 @@ using EmbedIO;
 using EmbedIO.Actions;
 using EmbedIO.BearerToken;
 using EmbedIO.WebApi;
+using Newtonsoft.Json;
 using Swan.DependencyInjection;
 using Swan.Logging;
 using XorusCalendarBot.Database;
@@ -23,22 +24,27 @@ public class Web : IDisposable
     //         new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })).ConfigureAwait(false);
     // }
 
-    public Web(Env env, DatabaseManager db, DiscordManager discordManager)
+    private static Task Serializer(IHttpContext context, object? data)
     {
-        var container = new DependencyContainer();
-        container.Register(discordManager);
-        container.Register(db);
-        container.Register(env);
+        return context.SendStringAsync(JsonConvert.SerializeObject(data), "application/json", Encoding.UTF8);
+    }
 
+    public Web(DependencyContainer container)
+    {
+        var env = container.Resolve<Env>();
         _server = new WebServer(o => o.WithUrlPrefix($"http://{env.ListenUrl}").WithMode(HttpListenerMode.EmbedIO))
             .WithLocalSessionManager();
+
         _server
             .WithCors()
             .WithBearerToken("/api/calendar", env.Secret)
             .WithBearerToken("/api/user", env.Secret)
-            .WithWebApi("/api/auth", m => m.WithController(() => new AuthController().WithContainer(container)))
-            .WithWebApi("/api/calendar", m => m.WithController(() => new CalendarController().WithContainer(container)))
-            .WithWebApi("/api/user", m => m.WithController(() => new UserController().WithContainer(container)));
+            .WithWebApi("/api/auth", Serializer,
+                m => m.WithController(() => new AuthController().WithContainer(container)))
+            .WithWebApi("/api/calendar", Serializer,
+                m => m.WithController(() => new CalendarController().WithContainer(container)))
+            .WithWebApi("/api/user", Serializer,
+                m => m.WithController(() => new UserController().WithContainer(container)));
         if (env.StaticHtmlPath != null)
             _server.WithStaticFolder("/", env.StaticHtmlPath, false);
 

@@ -1,16 +1,21 @@
 ﻿using LiteDB;
+using Swan.DependencyInjection;
 
 namespace XorusCalendarBot.Database;
 
 public class DatabaseManager : IDisposable
 {
+    private readonly DependencyContainer _container;
     private readonly LiteDatabase _db;
 
     public readonly ILiteCollection<CalendarEntity> CalendarEntityCollection;
     public readonly ILiteCollection<UserEntity> Users;
+    public event EventHandler? CalendarEntitiesUpdated;
 
-    public DatabaseManager(Env env)
+    public DatabaseManager(DependencyContainer container)
     {
+        _container = container;
+        var env = container.Resolve<Env>();
         _db = new LiteDatabase(env.DatabasePath ?? "database.db");
         CalendarEntityCollection = _db.GetCollection<CalendarEntity>("calendars");
 
@@ -20,6 +25,11 @@ public class DatabaseManager : IDisposable
             {
                 DiscordId = env.DiscordAdminId
             });
+    }
+
+    public void FireCalendarEntitiesUpdated()
+    {
+        CalendarEntitiesUpdated?.Invoke(this, EventArgs.Empty);
     }
 
     public void Dispose()

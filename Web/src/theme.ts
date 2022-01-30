@@ -4,7 +4,7 @@ import {Theme} from 'theme-ui';
 const theme: Theme = {
     ...base,
     config: {
-        initialColorModeName: 'dark',
+        initialColorModeName: 'aaaa',
     },
     fonts: {
         body: "Cabin, sans-serif",
@@ -14,9 +14,11 @@ const theme: Theme = {
     colors: {
         ...funk.colors,
         danger: "hsl(10, 80%, 50%)",
+        muted: "hsla(0, 0%, 50%, 10%)",
         modes: {
             dark: {
                 ...deep.colors,
+                muted: "hsla(230, 20%, 0%, 15%)",
                 danger: "hsl(10, 80%, 50%)",
             },
         },
@@ -68,30 +70,40 @@ const theme: Theme = {
             padding: 20,
             borderRadius: 4,
             boxShadow: '0 0 8px rgba(0, 0, 0, 0.125)',
-            backgroundColor: 'muted'
+            backgroundColor: 'muted',
+            border: "2px solid black",
+            borderColor: 'muted'
         },
     },
     buttons: {
         primary: {
             fontFamily: 'body',
             cursor: 'pointer',
+            border: "2px solid black",
+            borderColor: 'muted'
         },
         muted: {
             fontFamily: 'body',
             cursor: 'pointer',
             backgroundColor: 'muted',
-            color: 'text'
+            color: 'text',
+            border: "2px solid black",
+            borderColor: 'muted'
         },
         secondary: {
             fontFamily: 'body',
             cursor: 'pointer',
             color: 'background',
             bg: 'secondary',
+            border: "2px solid black",
+            borderColor: 'muted'
         },
         danger: {
             fontFamily: 'body',
             cursor: 'pointer',
             bg: 'danger',
+            border: "2px solid black",
+            borderColor: 'muted'
         },
         cardOpen: {
             fontFamily: 'body',
@@ -99,7 +111,9 @@ const theme: Theme = {
             bg: 'muted',
             text: 'text',
             textAlign: 'left',
-            color: 'text'
+            color: 'text',
+            border: "2px solid black",
+            borderColor: 'muted'
         }
     },
 };

@@ -1,32 +1,30 @@
 import React, {ComponentProps, ElementType, useState} from "react";
-import {Alert, Box, Button, Card, Flex, Heading, Input, Label, Spinner} from "theme-ui";
+import {Alert, Box, Button, Card, Flex, Grid, Heading, Input, Label, Paragraph, Spinner} from "theme-ui";
 import {apiUrl} from "../../lib/apiUrl";
 import {userHeaders} from "../../lib/auth";
 import {Field, FieldArray, Form, Formik} from "formik";
 import {useTheme} from "@theme-ui/style-guide";
 import {UserToken} from "../../lib/appState";
 import Swal from "sweetalert2";
+import {CalendarEntity} from "../../lib/apiObjects";
 
-export interface CalendarEntity {
-    Id: string,
-    Name: string | null,
-    CalendarEventPrefix: string,
-    CalendarUrl: string,
-    MaxDays: number,
-    NextDateMessage: string,
-    NothingPlannedMessage: string,
-    GuildId: string,
-    AvailableMentions: { [key: string]: string }[],
-    ReminderChannel: string,
-    ReminderOffsetSeconds: number,
-    Sentences: string[],
-    NextSentence: number
+export const RefreshButton = (props: {
+    refresh: () => void,
+    date: string
+}) => {
+    const [hover, setHover] = useState(false);
+    return <Button type="button" variant="muted" onClick={e => {
+        props.refresh();
+    }} sx={{float: "right"}} onMouseOver={() => setHover(true)} onMouseOut={() => setHover(false)}>
+        {hover ? props.date : 'Refresh'}
+    </Button>;
 }
 
-export  const Calendar = (props: {
+export const Calendar = (props: {
     calendar: CalendarEntity,
     user: UserToken,
-    refresh: () => void,
+    reload: () => void,
+    refreshCalendar: () => void,
     defaultOpen: boolean
 }) => {
     let cal = props.calendar;
@@ -34,6 +32,7 @@ export  const Calendar = (props: {
     const [opened, setOpened] = useState(props.defaultOpen);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
+    const [showAllEvents, setShowAllEvents] = useState(false);
     const theme = useTheme();
 
     const I = (x: {
@@ -51,18 +50,86 @@ export  const Calendar = (props: {
             <Field as={Input} id={"cal-" + cal.Id + "-" + entity} name={entity} {...(x.fieldP ?? {})}/>
         </Box>
     }
+
+    const dtfTime = Intl.DateTimeFormat(navigator.language, {timeStyle: 'long'});
+    const dtfFull = Intl.DateTimeFormat(navigator.language, {dateStyle: 'short', timeStyle: 'short'});
+
+    const eventCount = cal.NextOccurrences.length;
+
     // {#  sx={{backgroundColor: theme.colors!.muted}} padding={20}  #}
     const flex = (val ?: string) => ({sx: {flex: val ?? "1 1 auto"}});
     return <>
         <Card>
             {saving && <Spinner sx={{float: "right"}}/>}
 
+            <Button type="button" variant="muted" onClick={e => {
+                Swal.fire({
+                    title: 'yeet?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'YEET.',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        setError("");
+                        setSaving(true);
+                        fetch(apiUrl("/api/calendar/{id}", {}, {id: cal.Id}), {
+                            ...userHeaders(props.user),
+                            method: "DELETE"
+                        }).then(r => {
+                            setSaving(false);
+                            if (r.ok && r.status === 200) props.reload();
+                            else setError("Server returned error: " + r.status + " " + r.statusText)
+                        });
+                    }
+                })
+            }} sx={{float: "right"}} mx={2}>🗑️</Button>
+            <RefreshButton refresh={() => props.refreshCalendar()} date={dtfTime.format(new Date(cal.LastRefresh))}/>
+
             <Heading as={"h3"}>
                 {cal.Name ?? "Untitled calendar"}
             </Heading>
 
-            <small>{cal.CalendarUrl}</small>
-            <br/>
+            <p>
+                🗓️ Next events ({eventCount})
+            </p>
+
+            <Box sx={{width: '100%'}} my={2}>
+                <Grid columns={[3, '1fr 1fr 1fr']}>
+                    {cal.NextOccurrences.length > 0 ? cal.NextOccurrences.map((o, i) => {
+                        if (!showAllEvents && i > 2) return undefined;
+                        const start = new Date(o.StartTime);
+                        const notify = new Date(o.NotifyTime);
+                        return <Card sx={{
+                            display: "flex",
+                            flexDirection: "column"
+                        }} key={i + o.StartTime}>
+                            <Heading as={"h4"} sx={{
+                                fontSize: 1
+                            }}>{o.Summary ?? "Event"}</Heading>
+                            <Box sx={{flex: "1"}} my={2}>
+                                {o.ForcedMessage ? <small>{o.ForcedMessage}</small> : ""}
+                            </Box>
+                            <Paragraph as={"small"}>
+                                🛎️ {dtfTime.format(notify)}<br/>
+                                ⏲️ {dtfFull.format(start)}
+                            </Paragraph>
+                        </Card>
+                    }) : "No events found."}
+                </Grid>
+                {eventCount > 3 &&
+                    <Button type={"button"} variant={"muted"} sx={{
+                        width: "100%",
+                        marginTop: 2
+                    }} onClick={e => {
+                        e.preventDefault();
+                        setShowAllEvents(!showAllEvents);
+                    }}>
+                        {showAllEvents ? "Hide" : "Show more events"}
+                    </Button>
+                }
+            </Box>
 
             <Button onClick={e => {
                 e.preventDefault();
@@ -70,7 +137,7 @@ export  const Calendar = (props: {
             }} sx={{
                 width: "100%",
                 marginTop: '2',
-                marginBottom: opened ? '2' : '0'
+                marginBottom: opened ? '2' : '0',
             }} variant={"cardOpen"}>{saving ? 'Saving...' : (opened ? '🔽 Close' : '▶️ Edit')}</Button>
 
             {opened ? <Card>
@@ -84,7 +151,7 @@ export  const Calendar = (props: {
                         body: JSON.stringify(data)
                     }).then(r => {
                         setSaving(false);
-                        if (r.ok && r.status === 200) props.refresh();
+                        if (r.ok && r.status === 200) props.reload();
                         else setError("Server returned error: " + r.status + " " + r.statusText)
                     });
                 }}>
@@ -128,67 +195,53 @@ export  const Calendar = (props: {
                                     {({insert, remove, push}) => (
                                         <Box {...flex()}>
                                             <Label>Sentences ({values.Sentences.length})</Label>
-                                            <Flex sx={{flexDirection: 'column', gap: '2'}}>
-                                                {values.Sentences.length > 0 && values.Sentences.map((sentence, index) => {
-                                                    return <>
-                                                        <Flex variant={"layout.formRow"} sx={{gap: '1'}}>
-                                                            {/*<Button onClick={e => {*/}
-                                                            {/*}} disabled={true}>&uarr;</Button>*/}
-                                                            {/*<Button onClick={e => {*/}
-                                                            {/*}}>&darr;</Button>*/}
-                                                            <I text={`Sentences.${index}`}
-                                                               boxP={flex("1")}
-                                                               labelP={{sx: {display: "none"}}}
-                                                               fieldP={{placeholder: ""}}
-                                                            />
-                                                            <Button type="button" onClick={e => {
-                                                                remove(index)
-                                                            }} variant="secondary">❌️</Button>
-                                                        </Flex>
-                                                    </>
-                                                })}</Flex>
-                                            <Button type="button" onClick={() => push("")} variant="secondary" sx={{
-                                                width: '100%',
-                                                fontSize: '1',
-                                                padding: '0',
-                                                marginTop: '1'
-                                            }}>
-                                                Add Sentence
-                                            </Button>
+                                            <Card>
+                                                <Flex sx={{flexDirection: 'column', gap: '2'}}>
+                                                    {values.Sentences.length > 0 && values.Sentences.map((sentence, index) => {
+                                                        return <>
+                                                            <Flex variant={"layout.formRow"} sx={{gap: '1'}}>
+                                                                {/*<Button onClick={e => {*/}
+                                                                {/*}} disabled={true}>&uarr;</Button>*/}
+                                                                {/*<Button onClick={e => {*/}
+                                                                {/*}}>&darr;</Button>*/}
+                                                                <I text={`Sentences.${index}`}
+                                                                   boxP={flex("1")}
+                                                                   labelP={{sx: {display: "none"}}}
+                                                                   fieldP={{placeholder: ""}}
+                                                                />
+                                                                <Button type="button" onClick={e => {
+                                                                    remove(index)
+                                                                }} variant="secondary">❌️</Button>
+                                                            </Flex>
+                                                        </>
+                                                    })}
+                                                </Flex>
+                                                <Button type="button" onClick={() => push("")} variant="secondary" sx={{
+                                                    width: '100%',
+                                                    fontSize: '1',
+                                                    padding: '0',
+                                                    marginTop: '1'
+                                                }}>
+                                                    Add Sentence
+                                                </Button>
+                                            </Card>
                                         </Box>
                                     )}
                                 </FieldArray>
-                                {I({text: "NextSentence", boxP: {sx: {minWidth: "20%"}}})}
                             </Flex>
+                            {I({text: "NextSentence", boxP: {my: 2}})}
 
-                            <Button type="button" onClick={() => {
-                                Swal.fire({
-                                    title: 'yeet?',
-                                    icon: 'warning',
-                                    showCancelButton: true,
-                                    confirmButtonColor: '#3085d6',
-                                    cancelButtonColor: '#d33',
-                                    confirmButtonText: 'YEET.'
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        setError("");
-                                        setSaving(true);
-                                        fetch(apiUrl("/api/calendar/{id}", {}, {id: cal.Id}), {
-                                            ...userHeaders(props.user),
-                                            method: "DELETE"
-                                        }).then(r => {
-                                            setSaving(false);
-                                            if (r.ok && r.status === 200) props.refresh();
-                                            else setError("Server returned error: " + r.status + " " + r.statusText)
-                                        });
-                                    }
-                                })
-                            }} variant={"danger"}>🗑️ yeet</Button>
-                            <Button type={"submit"} variant={"accent"} sx={{float: "right"}}>💾 Save</Button>
+                            <Box sx={{textAlign: "right", marginTop: 3}}>
+                                <Button type={"submit"} sx={{width: "100%"}}>💾 Save</Button>
+                            </Box>
                         </Form>
                     )}
                 </Formik>
             </Card> : null}
         </Card>
     </>;
+}
+
+const CalendarEvent = (props: {}) => {
+
 }

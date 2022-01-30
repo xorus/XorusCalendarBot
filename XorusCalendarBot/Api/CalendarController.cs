@@ -28,6 +28,21 @@ public class CalendarController : BaseController
         }
     }
 
+    [Route(HttpVerbs.Get, "/{id}/refresh")]
+    public async Task<List<CalendarEntity>> Refresh(string id)
+    {
+        try
+        {
+            await Container.Resolve<InstanceDictionary>().RefreshAsync(Guid.Parse(id));
+            return Index();
+            // return Database.GetUserCalendars(GetUserFromHttpContext()).First(c => c.Id.Equals(Guid.Parse(id)));
+        }
+        catch (Exception)
+        {
+            throw new HttpException(404);
+        }
+    }
+
     [Route(HttpVerbs.Put, "/{id}")]
     public CalendarEntity Update(string id, [JsonData] CalendarEntity calendar)
     {
@@ -37,6 +52,7 @@ public class CalendarController : BaseController
         if (!GetUserFromHttpContext().Guilds.Contains(calendar.GuildId)) throw new HttpException(401);
 
         Database.Update(calendar);
+        Container.Resolve<InstanceDictionary>().Refresh(calendar);
         return calendar;
     }
 
@@ -48,6 +64,7 @@ public class CalendarController : BaseController
             var calendar = Database.CalendarEntityCollection.FindById(Guid.Parse(id));
             if (!GetUserFromHttpContext().Guilds.Contains(calendar.GuildId)) throw new HttpException(401);
             Database.CalendarEntityCollection.Delete(Guid.Parse(id));
+            Database.FireCalendarEntitiesUpdated();
         }
         catch (Exception)
         {
@@ -62,6 +79,7 @@ public class CalendarController : BaseController
         calendar.Id = Guid.NewGuid();
         calendar.GuildId = guild;
         Database.CalendarEntityCollection.Insert(calendar);
+        Database.FireCalendarEntitiesUpdated();
         return calendar;
     }
 }

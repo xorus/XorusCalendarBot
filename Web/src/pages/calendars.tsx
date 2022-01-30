@@ -4,8 +4,9 @@ import {apiUrl} from "../../lib/apiUrl";
 import {useAuth} from "../../lib/auth";
 import {useTheme} from "@theme-ui/style-guide";
 import {jsonReq, useGuilds} from "lib/useApi";
-import {Calendar, CalendarEntity} from "../components/Calendar";
+import {Calendar} from "../components/Calendar";
 import {GuildBanner} from "../components/GuildBanner";
+import {CalendarEntity} from "../../lib/apiObjects";
 
 const CalendarPage = () => {
     const [user] = useAuth();
@@ -13,15 +14,20 @@ const CalendarPage = () => {
     const [guilds] = useGuilds();
     const theme = useTheme();
 
-    const refresh = useCallback(async () => {
+    const reload = useCallback(async () => {
         console.log("req calendars " + JSON.stringify(user))
         const json = await jsonReq({url: apiUrl("/api/calendar"), user: user!});
         json && setCalendars(json);
     }, [user]);
 
+    const refreshCalendar = useCallback(async (id: string) => {
+        const json = await jsonReq({url: apiUrl("/api/calendar/" + id + "/refresh"), user: user!});
+        json && setCalendars(json);
+    }, [user]);
+
     useEffect(() => {
-        user && refresh()
-    }, [user, refresh]);
+        user && reload()
+    }, [user, reload]);
 
     if (user == null) return null;
 
@@ -39,8 +45,9 @@ const CalendarPage = () => {
             <GuildBanner guild={guilds.find((g) => g.Id === guildId)}/>
             <Flex variant={"layout.guildCalendars"}>
                 {collection ?
-                    collection.map(c => <Calendar key={c.Id} calendar={c} user={user} refresh={() => refresh()}
+                    collection.map(c => <Calendar key={c.Id} calendar={c} user={user} reload={() => reload()}
                                                   defaultOpen={false && collection.length === 1}
+                                                  refreshCalendar={() => refreshCalendar(c.Id)}
                     />) : <Box><Spinner/></Box>}
                 <Button type={"button"} onClick={async () => {
                     await jsonReq({
@@ -49,7 +56,7 @@ const CalendarPage = () => {
                         body: "",
                         user: user!
                     });
-                    refresh();
+                    reload();
                 }} my={theme.space![3]} sx={{width: 'auto', flex: '0'}} variant='muted'>
                     🗓️ Create calendar
                 </Button>

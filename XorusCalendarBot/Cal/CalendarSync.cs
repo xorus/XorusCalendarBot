@@ -49,8 +49,10 @@ public sealed class CalendarSync : IDisposable
             Console.WriteLine("refresh");
 
             CalendarEntity.NextOccurrences = Calendar.GetOccurrences(
-                DateTime.Now, DateTime.Now + TimeSpan.FromDays(CalendarEntity.MaxDays)
-            ).Select(occurrence => occurrence.CreateFromICal(_instance)).ToList();
+                    DateTime.Now, DateTime.Now + TimeSpan.FromDays(CalendarEntity.MaxDays)
+                ).Select(occurrence => occurrence.CreateFromICal(_instance))
+                .OrderBy(x => x.StartTime)
+                .ToList();
             CalendarEntity.LastRefresh = DateTime.Now.ToUniversalTime();
             _instance.Update();
 
@@ -66,8 +68,10 @@ public sealed class CalendarSync : IDisposable
     {
         if (_started) return;
         _started = true;
+#pragma warning disable CS4014
         Refresh();
         JobManager.AddJob(() => Refresh(), schedule => schedule.WithName(_refreshJobName).ToRunEvery(5).Hours());
+#pragma warning restore CS4014
     }
 
     private void StopAutoRefresh()
@@ -81,10 +85,5 @@ public sealed class CalendarSync : IDisposable
     private void OnUpdate()
     {
         Updated?.Invoke(this, EventArgs.Empty);
-    }
-
-    public static double ToUnixTimestamp(IDateTime date)
-    {
-        return date.AsUtc.Subtract(DateTime.UnixEpoch).TotalSeconds;
     }
 }

@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:6.0-alpine-amd64 AS base
+﻿FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
@@ -24,7 +24,6 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 ENV TZ=Europe/Paris
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apk add --no-cache yarn
 COPY --from=web-build /src/Web/out /web
 ENV STATIC_HTML_PATH /web
 

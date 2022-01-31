@@ -106,7 +106,8 @@ export const Calendar = (props: {
                             flexDirection: "column"
                         }} key={i + o.StartTime}>
                             <Heading as={"h4"} sx={{
-                                fontSize: 1
+                                fontSize: 1,
+                                wordBreak: "break-all"
                             }}>{o.Summary ?? "Event"}</Heading>
                             <Box sx={{flex: "1"}} my={2}>
                                 {o.ForcedMessage ? <small>{o.ForcedMessage}</small> : ""}

@@ -16,7 +16,7 @@ var env = new Env();
 serviceContainer.Register(env);
 
 db = new DatabaseManager(serviceContainer);
-discord = new DiscordManager(env);
+discord = new DiscordManager(serviceContainer);
 discord.Connect();
 serviceContainer.Register(db);
 serviceContainer.Register(discord);

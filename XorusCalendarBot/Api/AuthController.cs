@@ -91,6 +91,16 @@ public class AuthController : BaseController
 
         var col = Container.Resolve<DatabaseManager>().Users;
         var user = col.FindOne(x => x.DiscordId.Equals(discordUser.Id.ToString()));
+
+        if (user == null)
+        {
+            user = new UserEntity()
+            {
+                DiscordId = discordUser.Id.ToString()
+            };
+            col.Insert(user);
+        }
+        
         user.DiscordName = discordUser.Username;
         user.DiscordAvatar = discordUser.AvatarUrl;
 

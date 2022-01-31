@@ -1,5 +1,7 @@
 ﻿using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 using FluentScheduler;
+using Swan.Logging;
 using XorusCalendarBot.Cal;
 
 namespace XorusCalendarBot.Discord;
@@ -32,23 +34,23 @@ public class DiscordNotifier : IDisposable
         {
             // var runAt = occurrence.StartTime
             // .Add(TimeSpan.FromSeconds(_instance.CalendarEntity.ReminderOffsetSeconds));
-            var timestamp = occurrence.StartTime.Subtract(DateTime.UnixEpoch).TotalSeconds;
             var runAt = occurrence.NotifyTime;
 
 #if DEBUG
-            if (i == 0)
-            {
-                runAt = DateTime.Now + TimeSpan.FromSeconds(5);
-                i++;
-            }
-
-            Console.WriteLine(runAt);
+            // if (i == 0)
+            // {
+            //     runAt = DateTime.Now + TimeSpan.FromSeconds(5);
+            //     i++;
+            // }
+            //
+            // Console.WriteLine(runAt);
 #endif
             // Skip already passed event
             if (DateTime.Now > runAt) continue;
 
-            JobManager.AddJob(() => { Notify(occurrence, timestamp); },
-                schedule => schedule.WithName("discord-notify-" + _instance.CalendarEntity.Id + "-" + timestamp)
+            JobManager.AddJob(() => { Notify(occurrence); },
+                schedule => schedule
+                    .WithName("discord-notify-" + _instance.CalendarEntity.Id + "-" + occurrence.StartTime)
                     .ToRunOnceAt(runAt));
         }
     }
@@ -60,8 +62,20 @@ public class DiscordNotifier : IDisposable
             JobManager.RemoveJob(b.Name);
     }
 
-    private async void Notify(EventOccurrence occurrence, double timestamp)
+    private async void Notify(EventOccurrence occurrence)
     {
+        if (_instance.CalendarEntity.ReminderChannel.Length == 0) return;
+        DiscordChannel channel;
+        try
+        {
+            channel = await GetChannel(Convert.ToUInt64(_instance.CalendarEntity.ReminderChannel));
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Channel " + (_instance.CalendarEntity.ReminderChannel ?? "null") + "does not exist");
+            return;
+        }
+
         var str = occurrence.ForcedMessage;
         if (str == null)
         {
@@ -77,16 +91,16 @@ public class DiscordNotifier : IDisposable
         if (mentions != null) str = mentions.Aggregate(str, (current, mm) => current.Replace(mm.Name, mm.Code));
 
         str = new[] { 't', 'T', 'd', 'D', 'f', 'F', 'R' }.Aggregate(str,
-            (current, format) => current.Replace($"<{format}>", $"<t:{timestamp}:{format}>")
+            (current, format) =>
+                current.Replace($"<{format}>", $"<t:{occurrence.StartTime.ToUnixTimestamp()}:{format}>")
         );
         Console.WriteLine("runner" + _instance.CalendarEntity.ReminderChannel);
-
         await new DiscordMessageBuilder()
             .WithAllowedMention(RoleMention.All)
             .WithAllowedMention(UserMention.All)
             .WithAllowedMention(EveryoneMention.All)
             .WithContent(str)
-            .SendAsync(await GetChannel(Convert.ToUInt64(_instance.CalendarEntity.ReminderChannel)));
+            .SendAsync(channel);
         _instance.Update();
         // _instance.ConfigurationManager.Save();
     }

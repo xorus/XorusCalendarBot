@@ -6,6 +6,7 @@ namespace XorusCalendarBot.Cal;
 public class EventOccurrence
 {
     public DateTime StartTime { get; init; }
+    public DateTime EndTime { get; init; }
     public DateTime NotifyTime { get; init; }
     public string? Summary { get; init; }
     public string? Description { get; init; }
@@ -28,6 +29,7 @@ public static class EventOccurenceBuilder
         return new EventOccurrence()
         {
             StartTime = occurrence.Period.StartTime.Value.ToUniversalTime(),
+            EndTime = occurrence.Period.EndTime.Value.ToUniversalTime(),
             NotifyTime = occurrence.Period.StartTime
                 .Add(TimeSpan.FromSeconds(instance.CalendarEntity.ReminderOffsetSeconds))
                 .Value,

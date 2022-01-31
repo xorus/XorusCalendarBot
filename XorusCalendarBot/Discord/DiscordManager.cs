@@ -2,20 +2,22 @@
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
+using Swan.DependencyInjection;
 
 namespace XorusCalendarBot.Discord;
 
 public class DiscordManager
 {
+    private readonly DependencyContainer _container;
     public readonly DiscordClient DiscordClient;
-    public readonly Dictionary<string, IEnumerable<Instance>> InstanceDictionary = new();
 
-    public DiscordManager(Env env)
+    public DiscordManager(DependencyContainer container)
     {
+        _container = container;
         DiscordClient = new DiscordClient(
             new DiscordConfiguration
             {
-                Token = env.DiscordBotToken,
+                Token = container.Resolve<Env>().DiscordBotToken,
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.AllUnprivileged
             }
@@ -24,24 +26,25 @@ public class DiscordManager
 
     public async void Connect()
     {
-        var slash = DiscordClient.UseSlashCommands(new SlashCommandsConfiguration
-        {
-            Services = new ServiceCollection()
-                .AddSingleton(this)
-                .BuildServiceProvider()
-        });
-        slash.SlashCommandErrored += (sender, args) =>
-        {
-            Console.WriteLine("Error: " + sender + ", " + args.Exception);
-            return Task.CompletedTask;
-        };
-
+        // var slash = DiscordClient.UseSlashCommands(new SlashCommandsConfiguration
+        // {
+        //     Services = new ServiceCollection()
+        //         .AddSingleton(this)
+        //         .BuildServiceProvider()
+        // });
+        // slash.SlashCommandErrored += (sender, args) =>
+        // {
+        //     Console.WriteLine("Error: " + sender + ", " + args.Exception);
+        //     return Task.CompletedTask;
+        // };
+        //
+        //
+        //
         // foreach (var keyValuePair in InstanceDictionary)
         // {
-        // slash.RegisterCommands<SlashCommands>(keyValuePair.Key);
+        //     slash.RegisterCommands<SlashCommands>(keyValuePair.Key);
         // }
-
-        slash.RegisterCommands<SlashCommands>();
+        // slash.RegisterCommands<SlashCommands>();
         await DiscordClient.ConnectAsync();
     }
 

@@ -39,8 +39,11 @@ public class Instance : IDisposable
 
     public void Refresh()
     {
+#pragma warning disable CS4014
         CalendarSync.Refresh();
+#pragma warning restore CS4014
     }
+
     public async Task RefreshAsync()
     {
         await CalendarSync.Refresh();

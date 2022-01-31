@@ -48,7 +48,7 @@ const CalendarPage = () => {
                     collection.map(c => <Calendar key={c.Id} calendar={c} user={user} reload={() => reload()}
                                                   defaultOpen={false && collection.length === 1}
                                                   refreshCalendar={() => refreshCalendar(c.Id)}
-                    />) : <Box><Spinner/></Box>}
+                    />) : <Box></Box>}
                 <Button type={"button"} onClick={async () => {
                     await jsonReq({
                         url: apiUrl("/api/calendar", {guild: guildId}, {}),
@@ -68,7 +68,7 @@ const CalendarPage = () => {
         <Flex sx={{flexDirection: "column", gap: 4}}>
             {g}
         </Flex>
-        {calendars && calendars.length === 0 &&
+        {guilds && guilds.length === 0 &&
             <Box>The bot is not invited to any of your servers (if you just invited it, please re-login).</Box>}
 
         <Divider/>

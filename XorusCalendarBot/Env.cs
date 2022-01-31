@@ -6,7 +6,7 @@ public class Env
     {
         DiscordBotToken = Environment.GetEnvironmentVariable("BOT_TOKEN") ?? "";
         DatabasePath = Environment.GetEnvironmentVariable("DB_PATH") ?? "database.db";
-        Secret = Environment.GetEnvironmentVariable("SECRET") ?? "P8O9HsrlZzCnYaLIMXdlw6PYOlOE8UtGiyTfrbXZ";
+        Secret = Environment.GetEnvironmentVariable("SECRET") ?? "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcd";
         ListenUrl = Environment.GetEnvironmentVariable("LISTEN_URL") ?? "localhost:9876";
         DiscordClientId = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID") ?? "";
         DiscordClientSecret = Environment.GetEnvironmentVariable("DISCORD_CLIENT_SECRET") ?? "";

@@ -26,5 +26,6 @@ ENV TZ=Europe/Paris
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 COPY --from=web-build /src/Web/out /web
 ENV STATIC_HTML_PATH /web
+ENV DB_PATH /app/database.db
 
 ENTRYPOINT ["dotnet", "XorusCalendarBot.dll"]

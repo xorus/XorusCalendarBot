@@ -32,9 +32,12 @@ const CalendarPage = () => {
     if (user == null) return null;
 
     let calendarsPerGuild: Map<string, CalendarEntity[]> = new Map<string, CalendarEntity[]>();
+    guilds.forEach(guild => {
+        calendarsPerGuild.set(guild.Id, []);
+    })
+
     let g: React.ReactNode[] = [];
     calendars?.forEach(c => {
-        if (g.length > 0) g.push(<Divider/>);
         let col = calendarsPerGuild.get(c.GuildId) ?? [];
         col.push(c);
         calendarsPerGuild.set(c.GuildId, col);
@@ -71,8 +74,7 @@ const CalendarPage = () => {
         {guilds && guilds.length === 0 &&
             <Box>The bot is not invited to any of your servers (if you just invited it, please re-login).</Box>}
 
-        <Divider/>
-        <Link href={apiUrl("/api/auth/join")} target={"_blank"}>Add to server</Link>
+        <Link href={apiUrl("/api/auth/invite")} target={"_blank"}>Invite to server (requires re-login after inviting)</Link>
     </div>
 }
 

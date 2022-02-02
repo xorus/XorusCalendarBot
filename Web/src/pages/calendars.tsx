@@ -51,6 +51,7 @@ const CalendarPage = () => {
                     collection.map(c => <Calendar key={c.Id} calendar={c} user={user} reload={() => reload()}
                                                   defaultOpen={false && collection.length === 1}
                                                   refreshCalendar={() => refreshCalendar(c.Id)}
+                                                  canEdit={true}
                     />) : <Box></Box>}
                 <Button type={"button"} onClick={async () => {
                     await jsonReq({

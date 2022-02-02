@@ -44,15 +44,14 @@ public class CalendarController : BaseController
     }
 
     [Route(HttpVerbs.Put, "/{id}")]
-    public CalendarEntity Update(string id, [JsonData] CalendarEntity calendar)
+    public async Task<CalendarEntity> Update(string id, [JsonData] CalendarEntity calendar)
     {
-        Console.WriteLine("yo" + calendar);
         if (calendar == null) throw new HttpException(400);
         if (!calendar.Id.Equals(Guid.Parse(id))) throw new HttpException(401);
         if (!GetUserFromHttpContext().Guilds.Contains(calendar.GuildId)) throw new HttpException(401);
 
-        Database.Update(calendar);
-        Container.Resolve<InstanceDictionary>().Refresh(calendar);
+        Database.CalendarEntityCollection.Update(calendar);
+        await Container.Resolve<InstanceDictionary>().RefreshAsync(calendar);
         return calendar;
     }
 

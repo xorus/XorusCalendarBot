@@ -3,6 +3,7 @@ using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using XorusCalendarBot.Database;
+using XorusCalendarBot.Discord;
 
 namespace XorusCalendarBot.Cal;
 
@@ -45,15 +46,19 @@ public sealed class CalendarSync : IDisposable
             var nextEvents = new Calendar();
             nextEvents.Events.AddRange(o);
             Calendar = nextEvents;
-
-            Console.WriteLine("refresh");
-
             CalendarEntity.NextOccurrences = Calendar.GetOccurrences(
                     DateTime.Now, DateTime.Now + TimeSpan.FromDays(CalendarEntity.MaxDays)
                 ).Select(occurrence => occurrence.CreateFromICal(_instance))
                 .OrderBy(x => x.StartTime)
                 .ToList();
             CalendarEntity.LastRefresh = DateTime.Now.ToUniversalTime();
+
+            for (var i = 0; i < CalendarEntity.NextOccurrences.Count; i++)
+            {
+                var oc = CalendarEntity.NextOccurrences[i];
+                if (oc.IsForced) continue;
+                CalendarEntity.NextOccurrences[i].Message = DiscordNotifier.GetNextMessage(CalendarEntity, i);
+            }
             _instance.Update();
 
             OnUpdate();

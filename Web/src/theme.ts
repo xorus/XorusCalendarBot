@@ -35,19 +35,6 @@ const theme: Theme = {
             gap: '3',
             marginBottom: '2'
         },
-        guildPlaceholderAvatar: {
-            display: 'inline-block',
-            width: 48,
-            height: 46,
-            fontSize: 26,
-            padding: '0px',
-            paddingTop: '2px',
-            overflow: 'hidden',
-            textAlign: 'center',
-            borderRadius: 48,
-            backgroundColor: '#36393f',
-            color: 'white'
-        },
         guildCalendars: {
             paddingLeft: 4,
             borderLeft: '8px solid black',

@@ -29,6 +29,12 @@ public class Instance : IDisposable
         CalendarEntity = calendarEntity;
         Refresh();
     }
+    
+    public async Task ReplaceAsync(CalendarEntity calendarEntity)
+    {
+        CalendarEntity = calendarEntity;
+        await RefreshAsync();
+    }
 
     public void Dispose()
     {
@@ -37,7 +43,7 @@ public class Instance : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public void Refresh()
+    private void Refresh()
     {
 #pragma warning disable CS4014
         CalendarSync.Refresh();

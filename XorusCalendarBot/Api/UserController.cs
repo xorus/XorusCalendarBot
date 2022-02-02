@@ -1,7 +1,6 @@
-﻿using EmbedIO;
+﻿using DSharpPlus;
+using EmbedIO;
 using EmbedIO.Routing;
-using Swan;
-using Swan.Logging;
 using XorusCalendarBot.Database;
 using XorusCalendarBot.Discord;
 
@@ -13,10 +12,23 @@ public class UserController : BaseController
     public IEnumerable<GuildInfo> GetGuilds()
     {
         var dm = Container.Resolve<DiscordManager>();
-        ("amogus " + GetUserFromHttpContext().Guilds.ToJson()).Info();
         return dm.GetGuilds()
             .Where(x => GetUserFromHttpContext().Guilds.Contains(x.Value.Id.ToString()))
-            .Select(x => new GuildInfo { Id = x.Key.ToString(), IconUrl = x.Value.IconUrl, Name = x.Value.Name });
+            .Select(x => new GuildInfo
+            {
+                Id = x.Key.ToString(),
+                IconUrl = x.Value.IconUrl,
+                Name = x.Value.Name,
+                Channels = x.Value.Channels.Where(c => !c.Value.IsThread && c.Value.Type != ChannelType.Voice)
+                    .Select(y => new ChannelInfo()
+                    {
+                        Id = y.Value.Id.ToString(),
+                        Name = y.Value.IsCategory
+                            ? y.Value.Name
+                            : "#" + y.Value.Name.ToLower().RemoveAccents(),
+                        Category = y.Value.IsCategory
+                    })
+            });
     }
 
     [Route(HttpVerbs.Get, "/user")]
@@ -45,10 +57,18 @@ public class UserController : BaseController
         if (!Container.Resolve<Env>().DiscordAdminId.Equals(user.DiscordId)) throw new HttpException(401);
     }
 
+    public struct ChannelInfo
+    {
+        public string Id { get; init; }
+        public string Name { get; init; }
+        public bool Category { get; init; }
+    }
+
     public struct GuildInfo
     {
         public string Id { get; init; }
         public string IconUrl { get; init; }
         public string Name { get; init; }
+        public IEnumerable<ChannelInfo> Channels { get; init; }
     }
 }

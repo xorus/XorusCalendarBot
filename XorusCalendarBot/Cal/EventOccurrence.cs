@@ -10,7 +10,10 @@ public class EventOccurrence
     public DateTime NotifyTime { get; init; }
     public string? Summary { get; init; }
     public string? Description { get; init; }
-    public string? ForcedMessage { get; init; }
+    
+    // might desync with the actual sent message (only for web client preview purposes)
+    public string? Message { get; set; }
+    public bool IsForced { get; init; } = false;
 }
 
 public static class EventOccurenceBuilder
@@ -25,7 +28,10 @@ public static class EventOccurenceBuilder
         if (summary != null && summary.StartsWith(EventCommandPrefix))
             summary = summary[EventCommandPrefix.Length..];
         var description = source.Description;
-
+        var forcedMessage = description != null && description.StartsWith(EventMessageCommandPrefix)
+            ? description[EventMessageCommandPrefix.Length..]
+            : null;
+        
         return new EventOccurrence()
         {
             StartTime = occurrence.Period.StartTime.Value.ToUniversalTime(),
@@ -35,9 +41,8 @@ public static class EventOccurenceBuilder
                 .Value,
             Summary = summary,
             Description = description,
-            ForcedMessage = description != null && description.StartsWith(EventMessageCommandPrefix)
-                ? description[EventMessageCommandPrefix.Length..]
-                : null
+            Message = forcedMessage,
+            IsForced = forcedMessage != null
         };
     }
 }

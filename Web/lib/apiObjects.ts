@@ -2,6 +2,11 @@ export interface Guild {
     Id: string;
     IconUrl: string;
     Name: string;
+    Channels: {
+        Id: string,
+        Name: string,
+        Category: boolean
+    }[]
 }
 
 // all dates are represented as UTC strings
@@ -18,6 +23,7 @@ export interface CalendarEntity {
     ReminderChannel: string,
     ReminderOffsetSeconds: number,
     Sentences: string[],
+    JoinedSentences?: string,
     NextSentence: number,
     NextOccurrences: CalendarEvent[],
     LastRefresh: string
@@ -28,5 +34,6 @@ export interface CalendarEvent {
     NotifyTime: string,
     Summary: string | null,
     Description: string | null,
-    ForcedMessage: string | null
+    Message: string | null,
+    IsForced: boolean
 }

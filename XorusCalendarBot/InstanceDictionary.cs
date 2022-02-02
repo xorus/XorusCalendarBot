@@ -47,11 +47,11 @@ public class InstanceDictionary : IDisposable
         }
     }
 
-    public void Refresh(CalendarEntity calendarEntity)
+    public async Task RefreshAsync(CalendarEntity calendarEntity)
     {
         if (Instances.ContainsKey(calendarEntity.Id))
         {
-            Instances[calendarEntity.Id].Replace(calendarEntity);
+            await Instances[calendarEntity.Id].ReplaceAsync(calendarEntity);
         }
     }
 

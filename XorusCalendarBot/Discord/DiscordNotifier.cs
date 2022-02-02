@@ -3,6 +3,7 @@ using DSharpPlus.Exceptions;
 using FluentScheduler;
 using Swan.Logging;
 using XorusCalendarBot.Cal;
+using XorusCalendarBot.Database;
 
 namespace XorusCalendarBot.Discord;
 
@@ -72,21 +73,11 @@ public class DiscordNotifier : IDisposable
         }
         catch (NotFoundException)
         {
-            Logger.Error("Channel " + (_instance.CalendarEntity.ReminderChannel ?? "null") + "does not exist");
+            Logger.Error("Channel " + _instance.CalendarEntity.ReminderChannel + "does not exist");
             return;
         }
 
-        var str = occurrence.ForcedMessage;
-        if (str == null)
-        {
-            if (_instance.CalendarEntity.Sentences.Count == 0) return;
-
-            var i = _instance.CalendarEntity.NextSentence % _instance.CalendarEntity.Sentences.Count;
-            _instance.CalendarEntity.NextSentence = i;
-            str = _instance.CalendarEntity.Sentences[i];
-            _instance.CalendarEntity.NextSentence = (i + 1) % _instance.CalendarEntity.Sentences.Count;
-        }
-
+        var str = occurrence.Message ?? GetNextMessage(_instance.CalendarEntity);
         var mentions = await _discord.GetAvailableMentions(_instance.CalendarEntity.GuildId);
         if (mentions != null) str = mentions.Aggregate(str, (current, mm) => current.Replace(mm.Name, mm.Code));
 
@@ -103,6 +94,17 @@ public class DiscordNotifier : IDisposable
             .SendAsync(channel);
         _instance.Update();
         // _instance.ConfigurationManager.Save();
+    }
+
+    public static string GetNextMessage(CalendarEntity calendarEntity, int? withIndex = null)
+    {
+        if (calendarEntity.Sentences.Count == 0) return "";
+        var i = (calendarEntity.NextSentence + (withIndex ?? 0)) % calendarEntity.Sentences.Count;
+        var str = calendarEntity.Sentences[i];
+        if (withIndex != null) return str;
+        calendarEntity.NextSentence = i;
+        calendarEntity.NextSentence = (i + 1) % calendarEntity.Sentences.Count;
+        return str;
     }
 
     private async Task<DiscordChannel> GetChannel(ulong channel)

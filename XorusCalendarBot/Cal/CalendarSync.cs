@@ -29,6 +29,8 @@ public sealed class CalendarSync : IDisposable
 
     public async Task Refresh()
     {
+        if (CalendarEntity.CalendarUrl.Length == 0) return;
+        
         Console.WriteLine("Refreshing calendar");
         using var http = new HttpClient();
         try
@@ -59,6 +61,7 @@ public sealed class CalendarSync : IDisposable
                 if (oc.IsForced) continue;
                 CalendarEntity.NextOccurrences[i].Message = DiscordNotifier.GetNextMessage(CalendarEntity, i);
             }
+
             _instance.Update();
 
             OnUpdate();

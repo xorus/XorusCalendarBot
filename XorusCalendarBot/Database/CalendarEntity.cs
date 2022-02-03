@@ -1,6 +1,4 @@
-﻿using Ical.Net.DataTypes;
-using LiteDB;
-using XorusCalendarBot.Cal;
+﻿using XorusCalendarBot.Cal;
 
 namespace XorusCalendarBot.Database;
 
@@ -11,12 +9,11 @@ public class CalendarEntity
 
     public string CalendarEventPrefix { get; set; } = "raid night";
 
-    public string CalendarUrl { get; set; } =
-        "https://cloud.xorus.fr/remote.php/dav/public-calendars/BSydaTDPBGEpjFNN?export";
+    public string CalendarUrl { get; set; } = "";
 
     public int MaxDays { get; set; } = 14;
 
-    public string NextDateMessage { get; set; } = "Le <t:{start}:d> de <t:{start}:t> à <t:{end}:t> :";
+    public string NextDateMessage { get; set; } = "<t:{start}:d> <t:{start}:t> - <t:{end}:t> :";
     public string NothingPlannedMessage { get; set; } = "Nothing is planned at the moment.";
 
     public string GuildId { get; set; } = "";
@@ -40,8 +37,7 @@ public class CalendarEntity
             Sentences = new List<string>
             {
                 "Date formats: <d> <D> <t> <T> <f> <F> <R>",
-                "Rappel pour @Raid a <t>, <R> en fait :).",
-                "❤ @Raid ❤ <t> (<R>) ❤"
+                "Hey @Role, the thing is at <t>!",
             }
         };
     }

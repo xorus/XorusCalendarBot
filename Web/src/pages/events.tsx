@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from "react";
-import {Avatar, Box, Button, Divider, Flex, Heading, Link, Paragraph, Spinner} from "theme-ui";
+import {Avatar, Box, Button, Divider, Flex, Heading, Link, Spinner} from "theme-ui";
 import {apiUrl} from "../../lib/apiUrl";
 import {useAuth} from "../../lib/auth";
 import {useTheme} from "@theme-ui/style-guide";
@@ -13,7 +13,6 @@ const CalendarPage = () => {
     const [calendars, setCalendars] = useState<CalendarEntity[] | null>();
     const [guilds] = useGuilds();
     const theme = useTheme();
-    const [loading, setLoading] = useState(true);
 
     const reload = useCallback(async () => {
         console.log("req calendars " + JSON.stringify(user))
@@ -76,19 +75,7 @@ const CalendarPage = () => {
         {guilds && guilds.length === 0 &&
             <Box>The bot is not invited to any of your servers (if you just invited it, please re-login).</Box>}
 
-        <Link href={apiUrl("/api/auth/invite")} target={"_blank"}>Invite to server (requires re-login after
-            inviting)</Link>
-
-        <Divider/>
-        <Heading as="h2" my={3}>How to use</Heading>
-        <Paragraph my={2}>
-            To force an event to show up, prefix it by <kbd>!event</kbd> or assign it to the &quot;Discord
-            Event&quot; category (categories are not available on GMail).
-        </Paragraph>
-        <Paragraph my={2}>
-            To force an event to use a certain message, prefix the content by <kbd>!event-message</kbd>
-            &nbsp;(message can only be on one line)
-        </Paragraph>
+        <Link href={apiUrl("/api/auth/invite")} target={"_blank"}>Invite to server (requires re-login after inviting)</Link>
     </div>
 }
 

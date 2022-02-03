@@ -41,7 +41,7 @@ export const Calendar = (props: {
 }) => {
     let cal = props.calendar;
 
-    const [opened, setOpened] = useState(true||props.defaultOpen);
+    const [opened, setOpened] = useState(props.defaultOpen);
     const [loading, setLoading] = useState(false);
     const [showAllEvents, setShowAllEvents] = useState(false);
     const theme = useTheme();
@@ -143,6 +143,11 @@ export const Calendar = (props: {
                                     </Button>
                                 }
                             </Box>
+                            {cal.CalendarEventPrefix.length > 0 &&
+                                <Paragraph sx={{marginTop: 3}}>
+                                    ℹ️ Only events starting with &quot;{cal.CalendarEventPrefix}&quot; are processed.
+                                </Paragraph>
+                            }
                         </motion.div>
                     }
                     {opened &&
@@ -151,12 +156,11 @@ export const Calendar = (props: {
                             {props.canEdit && opened ?
                                 <ErrorBoundary FallbackComponent={ErrorFallback}>
                                     <CalendarEditForm calendar={props.calendar} loading={loading => setLoading(loading)}
-                                                  saved={props.reload}/>
+                                                      saved={props.reload}/>
                                 </ErrorBoundary> : null}
                         </motion.div>}
                 </AnimatePresence>
             </motion.div>
-
         </Card>
     </>;
 }

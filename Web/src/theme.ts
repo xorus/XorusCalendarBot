@@ -23,6 +23,34 @@ const theme: Theme = {
             },
         },
     },
+    forms: {
+        input: {
+            border: 'none',
+            borderBottom: '2px solid black',
+            borderBottomColor: 'black',
+            backgroundColor: 'background',
+            '&:focus': {
+                outline: 'none',
+                borderBottomColor: 'secondary',
+            }
+        },
+        textarea: {
+            border: 'none',
+            borderBottom: '2px solid black',
+            borderBottomColor: 'black',
+            backgroundColor: 'background',
+            '&:focus': {
+                outline: 'none',
+                borderBottomColor: 'secondary',
+            }
+        },
+        select: {
+            border: 'none',
+            borderBottom: '2px solid black',
+            borderBottomColor: 'black',
+            backgroundColor: 'background'
+        },
+    },
     layout: {
         container: {
             maxWidth: 1024,

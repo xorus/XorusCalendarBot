@@ -30,6 +30,7 @@ public class AuthController : BaseController
             |*/ Permissions.AccessChannels
                 | Permissions.SendMessages
                 | Permissions.UseApplicationCommands
+                | Permissions.MentionEveryone
         ).Replace("=bot", "=bot%20applications.commands");
         HttpContext.Redirect(link);
     }

@@ -1,6 +1,6 @@
 import {useRecoilState} from "recoil";
 import {useAuth, userHeaders} from "./auth";
-import {useCallback, useEffect} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {apiUrl} from "./apiUrl";
 import {guildList, UserToken} from "./appState";
 import {Guild} from "./apiObjects";
@@ -19,14 +19,20 @@ export const jsonReq = async ({url, user, method = "GET", body}: {
 
 export function useGuilds(): [Guild[], (() => void)] {
     const [guilds, setGuilds] = useRecoilState<Guild[]>(guildList);
-    const [user] = useAuth();
+    const [user, _, logout] = useAuth();
 
     const refreshGuilds = useCallback(async () => {
-        user && setGuilds(await jsonReq({
+        if (!user) return;
+        let guilds = await jsonReq({
             url: apiUrl('/api/user/guilds'),
             user
-        }) ?? []);
-    }, [user, setGuilds]);
+        });
+        if (guilds === null) {
+            logout();
+            return;
+        }
+        setGuilds(guilds);
+    }, [user, setGuilds, logout]);
 
     useEffect(() => {
         if (user == null || guilds.length > 0) return;

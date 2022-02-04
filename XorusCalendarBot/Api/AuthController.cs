@@ -24,14 +24,12 @@ public class AuthController : BaseController
     {
         var dm = Container.Resolve<DiscordManager>();
         var link = dm.DiscordClient.CurrentApplication.GenerateBotOAuth(
-            Permissions.ManageChannels
-            | Permissions.AccessChannels
-            | Permissions.ManageChannels
-            | Permissions.EmbedLinks
-            | Permissions.SendMessages
-            | Permissions.MentionEveryone
-            | Permissions.AddReactions
-            | Permissions.UseApplicationCommands
+            /* Permissions.ManageChannels
+             | Permissions.EmbedLinks
+             | Permissions.AddReactions
+            |*/ Permissions.AccessChannels
+                | Permissions.SendMessages
+                | Permissions.UseApplicationCommands
         ).Replace("=bot", "=bot%20applications.commands");
         HttpContext.Redirect(link);
     }
@@ -100,7 +98,7 @@ public class AuthController : BaseController
             };
             col.Insert(user);
         }
-        
+
         user.DiscordName = discordUser.Username;
         user.DiscordAvatar = discordUser.AvatarUrl;
 

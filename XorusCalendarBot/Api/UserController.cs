@@ -1,4 +1,5 @@
-﻿using DSharpPlus;
+﻿using ColorThiefDotNet;
+using DSharpPlus;
 using EmbedIO;
 using EmbedIO.Routing;
 using XorusCalendarBot.Database;
@@ -19,13 +20,15 @@ public class UserController : BaseController
                 Id = x.Key.ToString(),
                 IconUrl = x.Value.IconUrl,
                 Name = x.Value.Name,
-                Channels = x.Value.Channels.Where(c => !c.Value.IsThread && c.Value.Type != ChannelType.Voice)
+                Channels = x.Value.Channels
+                    .Where(c => !c.Value.IsThread
+                                && c.Value.Type != ChannelType.Voice
+                                && (c.Value.PermissionsFor(x.Value.CurrentMember) & Permissions.AccessChannels) != 0
+                                && (c.Value.PermissionsFor(x.Value.CurrentMember) & Permissions.SendMessages) != 0)
                     .Select(y => new ChannelInfo()
                     {
                         Id = y.Value.Id.ToString(),
-                        Name = y.Value.IsCategory
-                            ? y.Value.Name
-                            : "#" + y.Value.Name.ToLower().RemoveAccents(),
+                        Name = y.Value.IsCategory ? y.Value.Name : "#" + y.Value.Name.ToLower().RemoveAccents(),
                         Category = y.Value.IsCategory
                     })
             });

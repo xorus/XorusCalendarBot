@@ -54,7 +54,6 @@ export const TimeOffset = (props: {
 
     useEffect(() => {
         if (!signRef.current || !hoursRef.current || !minutesRef.current || !secondsRef.current) return;
-        console.log("reset")
         signRef.current.selectedIndex = parseInt(field.value) <= 0 ? 0 : 1;
         hoursRef.current.value = "" + Math.floor(Math.abs(field.value) / 60 / 60);
         minutesRef.current.value = "" + Math.floor(Math.abs(field.value) / 60 % 60);
@@ -87,11 +86,5 @@ export const TimeOffset = (props: {
                 </Select>
             </Box>
         </Box>
-        {/*<Box>*/}
-        {/*    /!*<Label htmlFor={`cal${props.calendarId}+ReminderOffsetSeconds_h`}>Hours :</Label>*!/*/}
-        {/*</Box>*/}
-        {/*<Box>*/}
-        {/*    <Label htmlFor={`cal${props.calendarId}+ReminderOffsetSeconds_m`}>Minutes</Label>*/}
-        {/*</Box>*/}
     </Box>;
 }

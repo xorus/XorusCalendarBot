@@ -5,7 +5,7 @@ import {ThemeUIStyleObject} from "@theme-ui/css";
 import {Box, Flex, Label, useThemeUI} from "theme-ui";
 import {GuildAvatar} from "../GuildBanner";
 
-export const GuildSelect = (props: {
+export const ChannelSelect = (props: {
     guildField: string,
     channelField: string,
     style: CSSProperties
@@ -67,7 +67,7 @@ export const GuildSelect = (props: {
             <Flex sx={{gap: 2, userSelect: 'none'}}>
                 {selectedGuild && <GuildAvatar guild={selectedGuild} size={24}/>}
                 <span style={{flex: 1}}>
-                    {selectedChannel && selectedChannel.Name || 'none selected'}
+                    {selectedChannel && selectedChannel.Name || 'no channel selected'}
                 </span>
                 {opened ? '👈' : '👇'}
             </Flex>
@@ -106,6 +106,11 @@ export const GuildSelect = (props: {
                         </Box>
                     </div>
                 ))}
+                <a href="#" onClick={e => {
+                    e.preventDefault();
+                    channelHelpers.setValue("");
+                    setOpened(false);
+                }} style={{color: 'var(--theme-ui-color-text)', textDecoration: 'none'}}>[unselect]</a>
             </Flex>
         }
     </div>

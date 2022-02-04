@@ -20,7 +20,7 @@ public sealed class CalendarSync : IDisposable
         _refreshJobName = "refresh-calendar-" + CalendarEntity.Id;
     }
 
-    public Calendar Calendar { get; private set; } = new();
+    private Calendar Calendar { get; set; } = new();
 
     public void Dispose()
     {
@@ -63,7 +63,6 @@ public sealed class CalendarSync : IDisposable
             }
 
             _instance.Update();
-
             OnUpdate();
         }
         catch (HttpRequestException e)

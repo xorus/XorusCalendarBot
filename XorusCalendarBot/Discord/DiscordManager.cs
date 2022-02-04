@@ -51,10 +51,11 @@ public class DiscordManager
     public async Task<IEnumerable<Mention>?> GetAvailableMentions(string guildId)
     {
         var guild = await DiscordClient.GetGuildAsync(Convert.ToUInt64(guildId));
+        var canMentionAnyone = (guild.CurrentMember.Permissions & Permissions.MentionEveryone) != 0;
         return guild == null
             ? null
             : guild.Roles
-                .Where(r => r.Value.IsMentionable)
+                .Where(r => canMentionAnyone || r.Value.IsMentionable)
                 .Select(r => Mention.FromRole(r.Value));
     }
 
@@ -75,7 +76,9 @@ public class DiscordManager
 
         public static Mention FromRole(DiscordRole role)
         {
-            return new Mention { Name = "@" + role.Name, Code = "<@&" + role.Id + ">" };
+            return role.Name == "@everyone"
+                ? new Mention { Name = role.Name, Code = role.Name }
+                : new Mention { Name = "@" + role.Name, Code = "<@&" + role.Id + ">" };
         }
     }
 }

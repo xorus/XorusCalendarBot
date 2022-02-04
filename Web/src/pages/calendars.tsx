@@ -14,11 +14,17 @@ const CalendarPage = () => {
     const [guilds] = useGuilds();
     const theme = useTheme();
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     const reload = useCallback(async () => {
         console.log("req calendars " + JSON.stringify(user))
-        const json = await jsonReq({url: apiUrl("/api/calendar"), user: user!});
-        json && setCalendars(json);
+        try {
+            const json = await jsonReq({url: apiUrl("/api/calendar"), user: user!});
+            json && setCalendars(json);
+            setLoading(false);
+        } catch (e) {
+            setError("" + e);
+        }
     }, [user]);
 
     const refreshCalendar = useCallback(async (id: string) => {
@@ -69,7 +75,22 @@ const CalendarPage = () => {
         </>);
     })
 
+    if (loading) {
+        return <div style={{textAlign: "center"}}>
+            <Spinner/>
+        </div>
+    }
+
+    if (error) {
+        return <div>
+            {error}<br/>
+            <Button onClick={() => reload()} type="button">Retry</Button><br/>
+            <Spinner/>
+        </div>
+    }
+
     return <div>
+
         <Flex sx={{flexDirection: "column", gap: 4}}>
             {g}
         </Flex>

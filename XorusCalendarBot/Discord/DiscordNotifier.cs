@@ -38,11 +38,11 @@ public class DiscordNotifier : IDisposable
             var runAt = occurrence.NotifyTime;
 
 #if DEBUG
-            // if (i == 0)
-            // {
-            //     runAt = DateTime.Now + TimeSpan.FromSeconds(5);
-            //     i++;
-            // }
+            if (i == 0)
+            {
+                runAt = DateTime.Now + TimeSpan.FromSeconds(5 + 5 * i);
+                i++;
+            }
             //
             // Console.WriteLine(runAt);
 #endif
@@ -65,7 +65,7 @@ public class DiscordNotifier : IDisposable
 
     private async void Notify(EventOccurrence occurrence)
     {
-        if (_instance.CalendarEntity.ReminderChannel.Length == 0) return;
+        if (string.IsNullOrEmpty(_instance.CalendarEntity.ReminderChannel)) return;
         DiscordChannel channel;
         try
         {
@@ -73,27 +73,34 @@ public class DiscordNotifier : IDisposable
         }
         catch (NotFoundException)
         {
-            Logger.Error("Channel " + _instance.CalendarEntity.ReminderChannel + "does not exist");
+            ("Channel " + _instance.CalendarEntity.ReminderChannel + "does not exist").Error();
             return;
         }
 
-        var str = occurrence.Message ?? GetNextMessage(_instance.CalendarEntity);
+        string? str = null;
+        if (occurrence.IsForced) str = occurrence.Message;
+        str ??= GetNextMessage(_instance.CalendarEntity);
+
         var mentions = await _discord.GetAvailableMentions(_instance.CalendarEntity.GuildId);
-        if (mentions != null) str = mentions.Aggregate(str, (current, mm) => current.Replace(mm.Name, mm.Code));
+
+        if (mentions != null)
+        {
+            str = mentions.Aggregate(str, (current, mm) => current.Replace(mm.Name, mm.Code));
+        }
 
         str = new[] { 't', 'T', 'd', 'D', 'f', 'F', 'R' }.Aggregate(str,
             (current, format) =>
                 current.Replace($"<{format}>", $"<t:{occurrence.StartTime.ToUnixTimestamp()}:{format}>")
         );
-        Console.WriteLine("runner" + _instance.CalendarEntity.ReminderChannel);
+
         await new DiscordMessageBuilder()
             .WithAllowedMention(RoleMention.All)
             .WithAllowedMention(UserMention.All)
             .WithAllowedMention(EveryoneMention.All)
             .WithContent(str)
             .SendAsync(channel);
+
         _instance.Update();
-        // _instance.ConfigurationManager.Save();
     }
 
     public static string GetNextMessage(CalendarEntity calendarEntity, int? withIndex = null)
@@ -102,7 +109,6 @@ public class DiscordNotifier : IDisposable
         var i = (calendarEntity.NextSentence + (withIndex ?? 0)) % calendarEntity.Sentences.Count;
         var str = calendarEntity.Sentences[i];
         if (withIndex != null) return str;
-        calendarEntity.NextSentence = i;
         calendarEntity.NextSentence = (i + 1) % calendarEntity.Sentences.Count;
         return str;
     }

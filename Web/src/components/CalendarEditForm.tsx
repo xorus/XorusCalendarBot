@@ -1,15 +1,28 @@
 import {Alert, Box, Button, Card, Flex, Input, Label, Select, Textarea, Themed} from "theme-ui";
-import {Field, Form, Formik, FormikProps, useField, useFormik, withFormik} from "formik";
+import {Field, FieldProps, Form, Formik, FormikProps} from "formik";
 import {apiUrl} from "../../lib/apiUrl";
 import {userHeaders} from "../../lib/auth";
 import React, {ComponentProps, CSSProperties, ElementType, useCallback, useEffect, useRef, useState} from "react";
 import {CalendarEntity} from "../../lib/apiObjects";
 import {authState, UserToken} from "../../lib/appState";
 import {useRecoilState} from "recoil";
-import {GuildSelect} from "./form/GuildSelect";
+import {ChannelSelect} from "./form/ChannelSelect";
 import {TimeOffset} from "./form/TimeOffset";
+import styled from "@emotion/styled";
 
 const flex = (val ?: string) => ({sx: {flex: val ?? "1 1 auto"}});
+
+const MyTextarea = styled.textarea`
+  border: none;
+  border-bottom: 2px solid black;
+  background-color: var(--theme-ui-colors-background);
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-bottom-color: var(--theme-ui-colors-secondary);
+  }
+`;
 
 const toFormData = (calendar: CalendarEntity) => {
     calendar = {...calendar};
@@ -80,14 +93,18 @@ export const CalendarEditForm = (props: {
                         <I text="Calendar url (accepts caldav/vCal/iCal formats)" entity="CalendarUrl"/>
                     </Box>
                     <Flex variant="layout.formRow">
-                        <GuildSelect style={{flex: 1, minWidth: "40%"}} guildField={"GuildId"}
-                                     channelField={"ReminderChannel"}/>
+                        <ChannelSelect style={{flex: 1, minWidth: "40%"}} guildField={"GuildId"}
+                                       channelField={"ReminderChannel"}/>
                         <TimeOffset field="ReminderOffsetSeconds" calendarId={cal.Id}/>
                     </Flex>
                     <Box {...flex()}>
                         <Label>Sentences (one per line)</Label>
-                        <Field as={Textarea} name="JoinedSentences" sx={{resize: "vertical"}}
-                               rows={values.Sentences.length + 1}/>
+                        <Field name="JoinedSentences">
+                            {({field, form, meta}: FieldProps) =>
+                                <Textarea value={field.value} onChange={field.onChange} name="JoinedSentences"
+                                          rows={values.Sentences.length + 1}/>
+                            }
+                        </Field>
                     </Box>
                     <details>
                         <summary>/next command settings</summary>

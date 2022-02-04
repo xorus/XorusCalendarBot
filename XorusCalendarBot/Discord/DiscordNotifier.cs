@@ -38,11 +38,11 @@ public class DiscordNotifier : IDisposable
             var runAt = occurrence.NotifyTime;
 
 #if DEBUG
-            if (i == 0)
-            {
-                runAt = DateTime.Now + TimeSpan.FromSeconds(5 + 5 * i);
-                i++;
-            }
+            // if (i == 0)
+            // {
+                // runAt = DateTime.Now + TimeSpan.FromSeconds(5 + 5 * i);
+                // i++;
+            // }
             //
             // Console.WriteLine(runAt);
 #endif

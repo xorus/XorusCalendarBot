@@ -1,13 +1,13 @@
 ﻿using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
-using XorusCalendarBot.Database;
+using XorusCalendarBot.Api;
 
-namespace XorusCalendarBot.Api;
+namespace XorusCalendarBot.Module.Calendar;
 
 public class CalendarController : BaseController
 {
-    private DatabaseManager Database => Container.Resolve<DatabaseManager>();
+    private CalendarModule Database => Container.Resolve<CalendarModule>();
 
     [Route(HttpVerbs.Get, "/")]
     public List<CalendarEntity> Index()
@@ -74,9 +74,11 @@ public class CalendarController : BaseController
     [Route(HttpVerbs.Post, "/")]
     public CalendarEntity Create([QueryField] string guild)
     {
-        var calendar = new CalendarEntity();
-        calendar.Id = Guid.NewGuid();
-        calendar.GuildId = guild;
+        var calendar = new CalendarEntity
+        {
+            Id = Guid.NewGuid(),
+            GuildId = guild
+        };
         Database.CalendarEntityCollection.Insert(calendar);
         Database.FireCalendarEntitiesUpdated();
         return calendar;

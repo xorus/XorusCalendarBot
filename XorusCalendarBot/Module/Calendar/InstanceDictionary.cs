@@ -1,7 +1,6 @@
 ﻿using Swan.DependencyInjection;
-using XorusCalendarBot.Database;
 
-namespace XorusCalendarBot;
+namespace XorusCalendarBot.Module.Calendar;
 
 public class InstanceDictionary : IDisposable
 {
@@ -9,7 +8,7 @@ public class InstanceDictionary : IDisposable
 
     private readonly DependencyContainer _container;
 
-    private DatabaseManager DatabaseManager => _container.Resolve<DatabaseManager>();
+    private CalendarModule CalendarModule => _container.Resolve<CalendarModule>();
 
     public InstanceDictionary(DependencyContainer container)
     {
@@ -19,7 +18,7 @@ public class InstanceDictionary : IDisposable
     public void Init()
     {
         Update();
-        DatabaseManager.CalendarEntitiesUpdated += (_, _) => Update();
+        CalendarModule.CalendarEntitiesUpdated += (_, _) => Update();
     }
 
     private void CreateInstances(IEnumerable<CalendarEntity> calendarEntities)
@@ -57,7 +56,7 @@ public class InstanceDictionary : IDisposable
 
     private void Update()
     {
-        CreateInstances(_container.Resolve<DatabaseManager>().CalendarEntityCollection.FindAll());
+        CreateInstances(_container.Resolve<CalendarModule>().CalendarEntityCollection.FindAll());
     }
 
     public void Dispose()

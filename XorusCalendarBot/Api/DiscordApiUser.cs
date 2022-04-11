@@ -4,23 +4,23 @@ using Newtonsoft.Json;
 
 namespace XorusCalendarBot.Api;
 
-public class DiscordApiUser
+internal sealed class DiscordApiUser
 {
     [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual string Id { get; internal set; } = null!;
+    public string Id { get; internal set; } = null!;
 
     [JsonProperty("username", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual string Username { get; internal set; } = null!;
+    public string Username { get; internal set; } = null!;
 
     [JsonProperty("discriminator", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual string Discriminator { get; internal set; } = null!;
+    public string Discriminator { get; internal set; } = null!;
 
     [JsonIgnore]
     private int DiscriminatorInt
         => int.Parse(this.Discriminator, NumberStyles.Integer, CultureInfo.InvariantCulture);
 
     [JsonProperty("avatar", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual string AvatarHash { get; internal set; } = null!;
+    public string AvatarHash { get; internal set; } = null!;
 
     [JsonIgnore]
     public string AvatarUrl => !string.IsNullOrWhiteSpace(this.AvatarHash)
@@ -34,31 +34,31 @@ public class DiscordApiUser
         $"https://cdn.discordapp.com/embed/avatars/{(this.DiscriminatorInt % 5).ToString(CultureInfo.InvariantCulture)}.png?size=1024";
 
     [JsonProperty("bot", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual bool IsBot { get; internal set; }
+    public bool IsBot { get; internal set; }
 
     [JsonProperty("mfa_enabled", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual bool? MfaEnabled { get; internal set; }
+    public bool? MfaEnabled { get; internal set; }
 
     [JsonProperty("system", NullValueHandling = NullValueHandling.Ignore)]
     public bool? IsSystem { get; internal set; }
 
     [JsonProperty("verified", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual bool? Verified { get; internal set; }
+    public bool? Verified { get; internal set; }
 
     [JsonProperty("email", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual string Email { get; internal set; } = null!;
+    public string Email { get; internal set; } = null!;
 
     [JsonProperty("premium_type", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual PremiumType? PremiumType { get; internal set; }
+    public PremiumType? PremiumType { get; internal set; }
 
     [JsonProperty("locale", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual string Locale { get; internal set; } = null!;
+    public string Locale { get; internal set; } = null!;
 
     [JsonProperty("flags", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual int OAuthFlags { get; internal set; }
+    public int OAuthFlags { get; internal set; }
 
     [JsonProperty("public_flags", NullValueHandling = NullValueHandling.Ignore)]
-    public virtual int Flags { get; internal set; }
+    public int Flags { get; internal set; }
 
     // /// <summary>
     // /// Gets the user's avatar URL, in requested format and size.

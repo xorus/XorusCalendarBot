@@ -1,11 +1,10 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using FluentScheduler;
 using Swan.Logging;
-using XorusCalendarBot.Cal;
-using XorusCalendarBot.Database;
+using XorusCalendarBot.Discord;
+using XorusCalendarBot.Module.Calendar.Cal;
 
-namespace XorusCalendarBot.Discord;
+namespace XorusCalendarBot.Module.Calendar;
 
 public class DiscordNotifier : IDisposable
 {
@@ -56,7 +55,7 @@ public class DiscordNotifier : IDisposable
         }
     }
 
-    public void UnregisterJobs()
+    private void UnregisterJobs()
     {
         foreach (var b in JobManager.AllSchedules.Where(s =>
                      s.Name.StartsWith("discord-notify-" + _instance.CalendarEntity.Id + "-")))

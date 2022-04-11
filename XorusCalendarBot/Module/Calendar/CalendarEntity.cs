@@ -1,6 +1,6 @@
-﻿using XorusCalendarBot.Cal;
+﻿using XorusCalendarBot.Module.Calendar.Cal;
 
-namespace XorusCalendarBot.Database;
+namespace XorusCalendarBot.Module.Calendar;
 
 public class CalendarEntity
 {

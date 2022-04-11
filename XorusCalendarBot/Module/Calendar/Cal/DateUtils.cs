@@ -1,4 +1,4 @@
-﻿namespace XorusCalendarBot.Cal;
+﻿namespace XorusCalendarBot.Module.Calendar.Cal;
 
 public static class DateUtils
 {

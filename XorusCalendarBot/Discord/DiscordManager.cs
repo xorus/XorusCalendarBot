@@ -134,7 +134,3 @@ public class DiscordManager
         }
     }
 }
-
-internal class NotFoundException : Exception
-{
-}

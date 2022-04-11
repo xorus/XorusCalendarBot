@@ -1,4 +1,6 @@
-﻿namespace XorusCalendarBot.Discord;
+﻿using XorusCalendarBot.Discord;
+
+namespace XorusCalendarBot.Module.Calendar;
 
 // https://github.com/DSharpPlus/DSharpPlus/tree/master/DSharpPlus.SlashCommands
 // ReSharper disable once ClassNeverInstantiated.Global

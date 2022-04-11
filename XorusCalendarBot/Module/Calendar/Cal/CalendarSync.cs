@@ -1,12 +1,9 @@
 ﻿using FluentScheduler;
-using Ical.Net;
 using Ical.Net.CalendarComponents;
-using Ical.Net.DataTypes;
 using Swan.Logging;
-using XorusCalendarBot.Database;
 using XorusCalendarBot.Discord;
 
-namespace XorusCalendarBot.Cal;
+namespace XorusCalendarBot.Module.Calendar.Cal;
 
 public sealed class CalendarSync : IDisposable
 {
@@ -21,7 +18,7 @@ public sealed class CalendarSync : IDisposable
         _refreshJobName = "refresh-calendar-" + CalendarEntity.Id;
     }
 
-    private Calendar Calendar { get; set; } = new();
+    private Ical.Net.Calendar Calendar { get; set; } = new();
 
     public void Dispose()
     {
@@ -39,7 +36,7 @@ public sealed class CalendarSync : IDisposable
         try
         {
             var downloadedCalendarStream = await http.GetStreamAsync(CalendarEntity.CalendarUrl);
-            var downloadedCalendar = Calendar.Load(downloadedCalendarStream);
+            var downloadedCalendar = Ical.Net.Calendar.Load(downloadedCalendarStream);
             var o = downloadedCalendar
                 .GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(CalendarEntity.MaxDays))
                 .Select(o => o.Source)
@@ -48,7 +45,7 @@ public sealed class CalendarSync : IDisposable
                             || e.Categories.Contains("Discord Event"))
                 .Distinct().ToList();
 
-            var nextEvents = new Calendar();
+            var nextEvents = new Ical.Net.Calendar();
             nextEvents.Events.AddRange(o);
             Calendar = nextEvents;
             CalendarEntity.NextOccurrences = Calendar.GetOccurrences(

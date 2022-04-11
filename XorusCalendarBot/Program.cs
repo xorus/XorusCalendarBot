@@ -4,6 +4,8 @@ using XorusCalendarBot;
 using XorusCalendarBot.Api;
 using XorusCalendarBot.Database;
 using XorusCalendarBot.Discord;
+using XorusCalendarBot.Module.Base;
+using XorusCalendarBot.Module.Calendar;
 
 DiscordManager discord;
 JobManager.Initialize();
@@ -16,17 +18,14 @@ discord = new DiscordManager(serviceContainer);
 discord.Connect();
 serviceContainer.Register(discord);
 
-var web = new Web(serviceContainer);
-
-var instanceDictionary = new InstanceDictionary(serviceContainer);
-serviceContainer.Register(instanceDictionary);
-instanceDictionary.Init();
+var modules = new List<Module> { new CalendarModule(serviceContainer) };
+var web = new Web(serviceContainer, modules);
 
 AppDomain.CurrentDomain.ProcessExit += (_, _) =>
 {
     Console.WriteLine("Exit requested");
     JobManager.RemoveAllJobs();
-    instanceDictionary.Dispose();
+    foreach (var module in modules) module.Dispose();
     discord.DisconnectSync();
     web.Dispose();
     serviceContainer.Resolve<DatabaseManager>().Dispose();

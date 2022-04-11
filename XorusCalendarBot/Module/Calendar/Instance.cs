@@ -1,27 +1,27 @@
 ﻿using Swan.DependencyInjection;
-using XorusCalendarBot.Cal;
 using XorusCalendarBot.Database;
 using XorusCalendarBot.Discord;
+using XorusCalendarBot.Module.Calendar.Cal;
 
-namespace XorusCalendarBot;
+namespace XorusCalendarBot.Module.Calendar;
 
 public class Instance : IDisposable
 {
     private readonly DiscordNotifier _discordNotifier;
     public CalendarEntity CalendarEntity { get; private set; }
-    public readonly CalendarSync CalendarSync;
+    private readonly CalendarSync _calendarSync;
     public readonly DependencyContainer Container;
 
     public Instance(DependencyContainer container, CalendarEntity calendarEntity)
     {
         Container = container;
         CalendarEntity = calendarEntity;
-        CalendarSync = new CalendarSync(this);
+        _calendarSync = new CalendarSync(this);
         _discordNotifier = new DiscordNotifier(this);
 
-        CalendarSync.StartAutoRefresh();
+        _calendarSync.StartAutoRefresh();
         // discordManager.InstanceDictionary.Add(CalendarEntity.GuildId, this);
-        CalendarSync.Updated += (_, _) => _discordNotifier.RegisterJobs();
+        _calendarSync.Updated += (_, _) => _discordNotifier.RegisterJobs();
     }
 
     public void Replace(CalendarEntity calendarEntity)
@@ -29,7 +29,7 @@ public class Instance : IDisposable
         CalendarEntity = calendarEntity;
         Refresh();
     }
-    
+
     public async Task ReplaceAsync(CalendarEntity calendarEntity)
     {
         CalendarEntity = calendarEntity;
@@ -39,24 +39,24 @@ public class Instance : IDisposable
     public void Dispose()
     {
         _discordNotifier.Dispose();
-        CalendarSync.Dispose();
+        _calendarSync.Dispose();
         GC.SuppressFinalize(this);
     }
 
     private void Refresh()
     {
 #pragma warning disable CS4014
-        CalendarSync.Refresh();
+        _calendarSync.Refresh();
 #pragma warning restore CS4014
     }
 
     public async Task RefreshAsync()
     {
-        await CalendarSync.Refresh();
+        await _calendarSync.Refresh();
     }
 
     public void Update()
     {
-        Container.Resolve<DatabaseManager>().Update(CalendarEntity);
+        Container.Resolve<CalendarModule>().Update(CalendarEntity);
     }
 }

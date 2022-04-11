@@ -37,7 +37,7 @@ public class UserController : BaseController
     [Route(HttpVerbs.Get, "/user")]
     public IEnumerable<UserEntity> ListUsers()
     {
-        EnsureAdmin();
+        EnsureSuperAdmin();
         return Container.Resolve<DatabaseManager>().Users.FindAll();
     }
 
@@ -45,19 +45,12 @@ public class UserController : BaseController
     [Route(HttpVerbs.Post, "/user/{id}")]
     public IEnumerable<UserEntity> AddUser(string id)
     {
-        EnsureAdmin();
+        EnsureSuperAdmin();
         Container.Resolve<DatabaseManager>().Users.Insert(new UserEntity
         {
             DiscordId = id
         });
         return Container.Resolve<DatabaseManager>().Users.FindAll();
-    }
-
-    private void EnsureAdmin()
-    {
-        var user = GetUserFromHttpContext();
-        if (user == null) throw new HttpException(401);
-        if (!Container.Resolve<Env>().DiscordAdminId.Equals(user.DiscordId)) throw new HttpException(401);
     }
 
     public struct ChannelInfo

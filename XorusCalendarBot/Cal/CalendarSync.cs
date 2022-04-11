@@ -63,7 +63,7 @@ public sealed class CalendarSync : IDisposable
             }
 
             _instance.Update();
-            OnUpdate();
+            Updated?.Invoke(this, EventArgs.Empty);
         }
         catch (HttpRequestException e)
         {
@@ -88,9 +88,4 @@ public sealed class CalendarSync : IDisposable
     }
 
     public event EventHandler? Updated;
-
-    private void OnUpdate()
-    {
-        Updated?.Invoke(this, EventArgs.Empty);
-    }
 }

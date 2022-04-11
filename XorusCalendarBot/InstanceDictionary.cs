@@ -5,7 +5,7 @@ namespace XorusCalendarBot;
 
 public class InstanceDictionary : IDisposable
 {
-    public Dictionary<Guid, Instance> Instances { get; set; } = new();
+    private Dictionary<Guid, Instance> Instances { get; set; } = new();
 
     private readonly DependencyContainer _container;
 
@@ -22,7 +22,7 @@ public class InstanceDictionary : IDisposable
         DatabaseManager.CalendarEntitiesUpdated += (_, _) => Update();
     }
 
-    void CreateInstances(IEnumerable<CalendarEntity> calendarEntities)
+    private void CreateInstances(IEnumerable<CalendarEntity> calendarEntities)
     {
         foreach (var calendarEntity in calendarEntities)
         {
@@ -55,7 +55,7 @@ public class InstanceDictionary : IDisposable
         }
     }
 
-    public void Update()
+    private void Update()
     {
         CreateInstances(_container.Resolve<DatabaseManager>().CalendarEntityCollection.FindAll());
     }

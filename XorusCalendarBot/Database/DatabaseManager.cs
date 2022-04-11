@@ -21,10 +21,9 @@ public class DatabaseManager : IDisposable
 
         Users = _db.GetCollection<UserEntity>("users");
         if (Users.Count() == 0)
-            Users.Insert(new UserEntity
-            {
-                DiscordId = env.DiscordAdminId
-            });
+            Users.Insert(new UserEntity { DiscordId = env.DiscordAdminId, IsAdmin = true });
+
+        new Migration(container).DoIt(_db);
     }
 
     public void FireCalendarEntitiesUpdated()

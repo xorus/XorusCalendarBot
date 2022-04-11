@@ -28,24 +28,24 @@ public class DiscordNotifier : IDisposable
     {
         UnregisterJobs();
 
-#if DEBUG
-        var i = 0;
-#endif
+// #if DEBUG
+//         var i = 0;
+// #endif
         foreach (var occurrence in _instance.CalendarEntity.NextOccurrences)
         {
             // var runAt = occurrence.StartTime
             // .Add(TimeSpan.FromSeconds(_instance.CalendarEntity.ReminderOffsetSeconds));
             var runAt = occurrence.NotifyTime;
 
-#if DEBUG
-            // if (i == 0)
-            // {
-                // runAt = DateTime.Now + TimeSpan.FromSeconds(5 + 5 * i);
-                // i++;
-            // }
-            //
-            // Console.WriteLine(runAt);
-#endif
+// #if DEBUG
+//             if (i == 0)
+//             {
+//                 runAt = DateTime.Now + TimeSpan.FromSeconds(5 + 5 * i);
+//                 i++;
+//             }
+//             
+//             Console.WriteLine(runAt);
+// #endif
             // Skip already passed event
             if (DateTime.Now > runAt) continue;
 

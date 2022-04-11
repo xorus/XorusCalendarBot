@@ -149,10 +149,17 @@ public class AuthController : BaseController
         public string refresh_token = "";
         public string scope = "";
         public string token_type = "";
+
+        public DiscordOAuthAccessToken()
+        {
+        }
     }
 
     public struct IJustNeedTheId
     {
         public string id = "";
+        public IJustNeedTheId()
+        {
+        }
     }
 }

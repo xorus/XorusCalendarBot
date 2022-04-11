@@ -16,6 +16,27 @@ public class BaseController : WebApiController
         if (user == null) throw new HttpException(401);
         return user;
     }
+
+    protected void EnsureSuperAdmin()
+    {
+        var user = GetUserFromHttpContext();
+        if (user == null) throw new HttpException(401);
+        if (!Container.Resolve<Env>().DiscordAdminId.Equals(user.DiscordId)) throw new HttpException(401);
+    }
+
+    protected void EnsureGuildAdmin(CalendarEntity calendarEntity)
+    {
+        var user = GetUserFromHttpContext();
+        if (user == null) throw new HttpException(401);
+        if (!Container.Resolve<Env>().DiscordAdminId.Equals(user.DiscordId)) throw new HttpException(401);
+    }
+
+    protected void EnsureEditor(CalendarEntity calendarEntity)
+    {
+        var user = GetUserFromHttpContext();
+        if (user == null) throw new HttpException(401);
+        if (!Container.Resolve<Env>().DiscordAdminId.Equals(user.DiscordId)) throw new HttpException(401);
+    }
 }
 
 public static class BaseControllerContainer

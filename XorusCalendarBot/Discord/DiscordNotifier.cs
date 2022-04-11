@@ -1,5 +1,5 @@
-﻿using DSharpPlus.Entities;
-using DSharpPlus.Exceptions;
+﻿using Discord;
+using Discord.WebSocket;
 using FluentScheduler;
 using Swan.Logging;
 using XorusCalendarBot.Cal;
@@ -28,24 +28,24 @@ public class DiscordNotifier : IDisposable
     {
         UnregisterJobs();
 
-// #if DEBUG
-//         var i = 0;
-// #endif
+#if DEBUG
+        var i = 0;
+#endif
         foreach (var occurrence in _instance.CalendarEntity.NextOccurrences)
         {
             // var runAt = occurrence.StartTime
             // .Add(TimeSpan.FromSeconds(_instance.CalendarEntity.ReminderOffsetSeconds));
             var runAt = occurrence.NotifyTime;
 
-// #if DEBUG
-//             if (i == 0)
-//             {
-//                 runAt = DateTime.Now + TimeSpan.FromSeconds(5 + 5 * i);
-//                 i++;
-//             }
-//             
-//             Console.WriteLine(runAt);
-// #endif
+#if DEBUG
+            if (i == 0)
+            {
+                runAt = DateTime.Now + TimeSpan.FromSeconds(5 + 5 * i);
+                i++;
+            }
+
+            Console.WriteLine(runAt);
+#endif
             // Skip already passed event
             if (DateTime.Now > runAt) continue;
 
@@ -66,7 +66,7 @@ public class DiscordNotifier : IDisposable
     private async void Notify(EventOccurrence occurrence)
     {
         if (string.IsNullOrEmpty(_instance.CalendarEntity.ReminderChannel)) return;
-        DiscordChannel channel;
+        IMessageChannel channel;
         try
         {
             channel = await GetChannel(Convert.ToUInt64(_instance.CalendarEntity.ReminderChannel));
@@ -81,25 +81,15 @@ public class DiscordNotifier : IDisposable
         if (occurrence.IsForced) str = occurrence.Message;
         str ??= GetNextMessage(_instance.CalendarEntity);
 
-        var mentions = await _discord.GetAvailableMentions(_instance.CalendarEntity.GuildId);
-
-        if (mentions != null)
-        {
-            str = mentions.Aggregate(str, (current, mm) => current.Replace(mm.Name, mm.Code));
-        }
-
+        var mentions = _discord.GetAvailableMentions(_instance.CalendarEntity.GuildId);
+        str = mentions.Aggregate(str, (current, mm) => current.Replace(mm.Name, mm.Code));
         str = new[] { 't', 'T', 'd', 'D', 'f', 'F', 'R' }.Aggregate(str,
             (current, format) =>
                 current.Replace($"<{format}>", $"<t:{occurrence.StartTime.ToUnixTimestamp()}:{format}>")
         );
+        if (str.Length == 0) str = "Bot was improperly set-up: no event message is set.";
 
-        await new DiscordMessageBuilder()
-            .WithAllowedMention(RoleMention.All)
-            .WithAllowedMention(UserMention.All)
-            .WithAllowedMention(EveryoneMention.All)
-            .WithContent(str)
-            .SendAsync(channel);
-
+        await channel.SendMessageAsync(str, allowedMentions: AllowedMentions.All);
         _instance.Update();
     }
 
@@ -113,9 +103,14 @@ public class DiscordNotifier : IDisposable
         return str;
     }
 
-    private async Task<DiscordChannel> GetChannel(ulong channel)
+    private async Task<IMessageChannel> GetChannel(ulong channelId)
     {
-        // todo: handle channel not existing
-        return await _instance.Container.Resolve<DiscordManager>().DiscordClient.GetChannelAsync(channel);
+        var channel = await _instance.Container.Resolve<DiscordManager>().DiscordClient.GetChannelAsync(channelId);
+        if (channel is not IMessageChannel messageChannel)
+        {
+            throw new NotFoundException();
+        }
+
+        return messageChannel;
     }
 }

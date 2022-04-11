@@ -2,6 +2,7 @@
 using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
+using Swan.Logging;
 using XorusCalendarBot.Database;
 using XorusCalendarBot.Discord;
 
@@ -27,11 +28,13 @@ public sealed class CalendarSync : IDisposable
         StopAutoRefresh();
     }
 
+    private const string Name = "CalendarSync";
+
     public async Task Refresh()
     {
         if (CalendarEntity.CalendarUrl.Length == 0) return;
         
-        Console.WriteLine("Refreshing calendar");
+        "Refreshing calendar".Info(Name);
         using var http = new HttpClient();
         try
         {
@@ -67,7 +70,7 @@ public sealed class CalendarSync : IDisposable
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine("Cannot refresh " + CalendarEntity.CalendarUrl + " " + e.Message);
+            ("Cannot refresh " + CalendarEntity.CalendarUrl + " " + e.Message).Error(Name);
         }
     }
 

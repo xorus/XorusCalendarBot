@@ -1,19 +1,8 @@
-﻿using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Globalization;
-using System.Text.RegularExpressions;
-using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using Ical.Net.CalendarComponents;
-using Ical.Net.DataTypes;
-using XorusCalendarBot.Cal;
-
-namespace XorusCalendarBot.Discord;
+﻿namespace XorusCalendarBot.Discord;
 
 // https://github.com/DSharpPlus/DSharpPlus/tree/master/DSharpPlus.SlashCommands
 // ReSharper disable once ClassNeverInstantiated.Global
-public class SlashCommands : ApplicationCommandModule
+public class SlashCommands
 {
     // set via Dependency Injection
     public DiscordManager? DiscordManager { private get; set; }

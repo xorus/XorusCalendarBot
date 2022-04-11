@@ -2,8 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using System.Web;
-using DSharpPlus;
-using DSharpPlus.Entities;
+using Discord;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
@@ -23,24 +22,29 @@ public class AuthController : BaseController
     public void Invite()
     {
         var dm = Container.Resolve<DiscordManager>();
-        var link = dm.DiscordClient.CurrentApplication.GenerateBotOAuth(
-            /* Permissions.ManageChannels
-             | Permissions.EmbedLinks
-             | Permissions.AddReactions
-            |*/ Permissions.AccessChannels
-                | Permissions.SendMessages
-                | Permissions.UseApplicationCommands
-                | Permissions.MentionEveryone
-        ).Replace("=bot", "=bot%20applications.commands");
+
+        const GuildPermission permission = GuildPermission.ViewChannel & GuildPermission.SendMessages &
+                                           GuildPermission.UseApplicationCommands & GuildPermission.MentionEveryone;
+
+        var link = "https://discord.com/api/oauth2/authorize?client_id=" + Env.DiscordClientId + "&permissions=" +
+                   permission + "&scope=bot%20applications.commands";
+        // dm.DiscordClient.CurrentApplication.GenerateBotOAuth(
+        //     /* Permissions.ManageChannels
+        //      | Permissions.EmbedLinks
+        //      | Permissions.AddReactions
+        //     |*/ Permissions.AccessChannels
+        //         | Permissions.SendMessages
+        //         | Permissions.UseApplicationCommands
+        //         | Permissions.MentionEveryone
+        // ).Replace("=bot", "=bot%20applications.commands");
         HttpContext.Redirect(link);
     }
 
     [Route(HttpVerbs.Get, "/discord/login")]
     public void DiscordLogin()
     {
-        var env = Container.Resolve<Env>();
-        HttpContext.Redirect("https://discord.com/api/oauth2/authorize?client_id=" + env.DiscordClientId +
-                             "&redirect_uri=" + HttpUtility.UrlEncode(env.DiscordRedirectUri) +
+        HttpContext.Redirect("https://discord.com/api/oauth2/authorize?client_id=" + Env.DiscordClientId +
+                             "&redirect_uri=" + HttpUtility.UrlEncode(Env.DiscordRedirectUri) +
                              "&response_type=code&scope=identify%20guilds");
     }
 
@@ -81,7 +85,7 @@ public class AuthController : BaseController
 
         var str1 = await response.Content.ReadAsStringAsync();
         // Logger.Info("/api/users/@me " + str1);
-        var discordUser = JsonConvert.DeserializeObject<DiscordUser>(str1);
+        var discordUser = JsonConvert.DeserializeObject<DiscordApiUser>(str1);
         if (discordUser == null)
         {
             ("/users/@me: cannot deserialize user from " + str1).Error();
@@ -158,6 +162,7 @@ public class AuthController : BaseController
     public struct IJustNeedTheId
     {
         public string id = "";
+
         public IJustNeedTheId()
         {
         }

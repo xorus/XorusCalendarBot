@@ -1,5 +1,5 @@
-﻿using ColorThiefDotNet;
-using DSharpPlus;
+﻿using Discord;
+using Discord.WebSocket;
 using EmbedIO;
 using EmbedIO.Routing;
 using XorusCalendarBot.Database;
@@ -13,24 +13,55 @@ public class UserController : BaseController
     public IEnumerable<GuildInfo> GetGuilds()
     {
         var dm = Container.Resolve<DiscordManager>();
+
         return dm.GetGuilds()
             .Where(x => GetUserFromHttpContext().Guilds.Contains(x.Value.Id.ToString()))
-            .Select(x => new GuildInfo
+            .Select(x =>
             {
-                Id = x.Key.ToString(),
-                IconUrl = x.Value.IconUrl,
-                Name = x.Value.Name,
-                Channels = x.Value.Channels
-                    .Where(c => !c.Value.IsThread
-                                && c.Value.Type != ChannelType.Voice
-                                && (c.Value.PermissionsFor(x.Value.CurrentMember) & Permissions.AccessChannels) != 0
-                                && (c.Value.PermissionsFor(x.Value.CurrentMember) & Permissions.SendMessages) != 0)
-                    .Select(y => new ChannelInfo()
-                    {
-                        Id = y.Value.Id.ToString(),
-                        Name = y.Value.IsCategory ? y.Value.Name : "#" + y.Value.Name.ToLower().RemoveAccents(),
-                        Category = y.Value.IsCategory
-                    })
+                var channels = x.Value.GetChannelsAsync().Result;
+                var botUser = x.Value.GetCurrentUserAsync(CacheMode.CacheOnly).Result;
+
+                return new GuildInfo
+                {
+                    Id = x.Key.ToString(),
+                    IconUrl = x.Value.IconUrl,
+                    Name = x.Value.Name,
+                    Channels = channels
+                        .Where(c =>
+                        {
+                            if (c is not SocketCategoryChannel && c is not SocketTextChannel)
+                            {
+                                return false;
+                            }
+
+                            var perms = botUser.GetPermissions(c);
+                            return perms.ViewChannel && perms.SendMessages;
+                        })
+                        .Select(y =>
+                        {
+                            if (y is SocketCategoryChannel)
+                            {
+                                return new ChannelInfo()
+                                {
+                                    Id = y.Id.ToString(),
+                                    Name = y.Name,
+                                    Category = true
+                                };
+                            }
+
+                            if (y is SocketTextChannel)
+                            {
+                                return new ChannelInfo()
+                                {
+                                    Id = y.Id.ToString(),
+                                    Name = "#" + y.Name.ToLower().RemoveAccents(),
+                                    Category = false
+                                };
+                            }
+
+                            throw new Exception("Unexpected channel type " + y.GetType().Name);
+                        })
+                };
             });
     }
 

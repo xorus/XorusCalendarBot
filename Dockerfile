@@ -4,7 +4,6 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["XorusCalendarBot/XorusCalendarBot.csproj", "XorusCalendarBot/"]
-ADD nuget.config .
 RUN dotnet restore "XorusCalendarBot/XorusCalendarBot.csproj"
 COPY . .
 WORKDIR "/src/XorusCalendarBot"

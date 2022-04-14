@@ -1,7 +1,9 @@
 ﻿using EmbedIO;
+using EmbedIO.BearerToken;
 using EmbedIO.WebApi;
 using LiteDB;
 using Swan.DependencyInjection;
+using Swan.Logging;
 using XorusCalendarBot.Api;
 using XorusCalendarBot.Database;
 
@@ -45,6 +47,8 @@ public class CalendarModule : Base.Module
 
     public override void RegisterControllers(WebServer server)
     {
+        "Registering calendar controller".Info(GetName());
+        server.WithBearerToken("/api/calendar", Container.Resolve<Env>().Secret);
         server.WithWebApi("/api/calendar", Web.Serializer,
             m => m.WithController(() => new CalendarController().WithContainer(Container)));
     }

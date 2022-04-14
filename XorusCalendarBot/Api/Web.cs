@@ -21,15 +21,14 @@ public class Web : IDisposable
 
         _server
             .WithCors()
-            .WithBearerToken("/api/calendar", env.Secret)
             .WithBearerToken("/api/user", env.Secret)
             .WithWebApi("/api/auth", Serializer,
                 m => m.WithController(() => new AuthController().WithContainer(container)))
             .WithWebApi("/api/user", Serializer,
                 m => m.WithController(() => new UserController().WithContainer(container)));
+        foreach (var module in modules) module.RegisterControllers(_server);
         if (env.StaticHtmlPath != null)
             _server.WithStaticFolder("/", env.StaticHtmlPath, false);
-        foreach (var module in modules) module.RegisterControllers(_server);
 
         // Listen for state changes.
         _server.StateChanged += (s, e) => $"Now {e.NewState}".Info("WebServer");

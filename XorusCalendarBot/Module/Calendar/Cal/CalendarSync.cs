@@ -40,18 +40,43 @@ public sealed class CalendarSync : IDisposable
                 .GetOccurrences(DateTime.Now, DateTime.Now + TimeSpan.FromDays(CalendarEntity.MaxDays))
                 .Select(o => o.Source)
                 .Cast<CalendarEvent>()
-                .Where(e => e.Summary.ToLower().StartsWith(CalendarEntity.CalendarEventPrefix.ToLower())
+                .Where(e =>
+                {
+                    // if (e.ExceptionDates.Count > 0)
+                    // {
+                    //     Console.WriteLine("---");
+                    //     foreach (var argExceptionDate in e.ExceptionDates)
+                    //     {
+                    //         if (e.Start.Date == argExceptionDate.)
+                    //         {
+                    //             Console.WriteLine("Exception date: " + argExceptionDate);
+                    //         }
+                    //         Console.WriteLine(argExceptionDate);
+                    //     }
+                    // }
+                    return (e.Summary.ToLower().StartsWith(CalendarEntity.CalendarEventPrefix.ToLower())
                             || e.Categories.Contains("Discord Event"))
+                           && e.IsActive;
+                })
                 .Distinct().ToList();
+
 
             var nextEvents = new Ical.Net.Calendar();
             nextEvents.Events.AddRange(o);
             Calendar = nextEvents;
             CalendarEntity.NextOccurrences = Calendar.GetOccurrences(
                     DateTime.Now, DateTime.Now + TimeSpan.FromDays(CalendarEntity.MaxDays)
-                ).Select(occurrence => occurrence.CreateFromICal(_instance))
-                .OrderBy(x => x.StartTime)
-                .ToList();
+                ).Select(occurrence =>
+                {
+                    // ignore events in exception dates
+                    return occurrence.Source.ExceptionDates.Any(
+                        pl => pl.Any(p => p.CollidesWith(occurrence.Period)))
+                        ? null
+                        : occurrence.CreateFromICal(_instance);
+                })
+                .Where(e => e != null)
+                .OrderBy(x => x!.StartTime) // cannot be null thanks to the previous Where clause
+                .ToList()!;
             CalendarEntity.LastRefresh = DateTime.Now.ToUniversalTime();
 
             for (var i = 0; i < CalendarEntity.NextOccurrences.Count; i++)

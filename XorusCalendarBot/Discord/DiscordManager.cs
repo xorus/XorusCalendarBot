@@ -130,8 +130,8 @@ public class DiscordManager
         {
             return new[]
             {
-                new Mention() { Name = "@" + user.Username, Code = user.Mention },
-                new Mention() { Name = "@" + user.Username + "#" + user.DiscriminatorValue, Code = user.Mention },
+                new Mention { Name = "@" + user.Username, Code = user.Mention },
+                new Mention { Name = "@" + user.Username + "#" + user.DiscriminatorValue, Code = user.Mention }
             };
         }
     }

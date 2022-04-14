@@ -17,21 +17,21 @@ internal sealed class DiscordApiUser
 
     [JsonIgnore]
     private int DiscriminatorInt
-        => int.Parse(this.Discriminator, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        => int.Parse(Discriminator, NumberStyles.Integer, CultureInfo.InvariantCulture);
 
     [JsonProperty("avatar", NullValueHandling = NullValueHandling.Ignore)]
     public string AvatarHash { get; internal set; } = null!;
 
     [JsonIgnore]
-    public string AvatarUrl => !string.IsNullOrWhiteSpace(this.AvatarHash)
-        ? (this.AvatarHash.StartsWith("a_")
-            ? $"https://cdn.discordapp.com/avatars/{this.Id.ToString(CultureInfo.InvariantCulture)}/{this.AvatarHash}.gif?size=1024"
-            : $"https://cdn.discordapp.com/avatars/{this.Id}/{this.AvatarHash}.png?size=1024")
-        : this.DefaultAvatarUrl;
+    public string AvatarUrl => !string.IsNullOrWhiteSpace(AvatarHash)
+        ? AvatarHash.StartsWith("a_")
+            ? $"https://cdn.discordapp.com/avatars/{Id.ToString(CultureInfo.InvariantCulture)}/{AvatarHash}.gif?size=1024"
+            : $"https://cdn.discordapp.com/avatars/{Id}/{AvatarHash}.png?size=1024"
+        : DefaultAvatarUrl;
 
     [JsonIgnore]
     private string DefaultAvatarUrl =>
-        $"https://cdn.discordapp.com/embed/avatars/{(this.DiscriminatorInt % 5).ToString(CultureInfo.InvariantCulture)}.png?size=1024";
+        $"https://cdn.discordapp.com/embed/avatars/{(DiscriminatorInt % 5).ToString(CultureInfo.InvariantCulture)}.png?size=1024";
 
     [JsonProperty("bot", NullValueHandling = NullValueHandling.Ignore)]
     public bool IsBot { get; internal set; }
@@ -109,5 +109,8 @@ internal sealed class DiscordApiUser
     //     }
     // }
 
-    public override string ToString() => $"User {this.Id}; {this.Username}#{this.Discriminator}";
+    public override string ToString()
+    {
+        return $"User {Id}; {Username}#{Discriminator}";
+    }
 }

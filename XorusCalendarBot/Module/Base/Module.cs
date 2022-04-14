@@ -7,12 +7,12 @@ namespace XorusCalendarBot.Module.Base;
 
 public abstract class Module : IModule
 {
-    protected DependencyContainer Container { get; }
-
     protected Module(DependencyContainer container)
     {
         Container = container;
     }
+
+    protected DependencyContainer Container { get; }
 
     public abstract void Dispose();
 

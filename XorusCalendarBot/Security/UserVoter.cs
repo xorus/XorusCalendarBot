@@ -1,5 +1,4 @@
-﻿using Swan.DependencyInjection;
-using XorusCalendarBot.Database;
+﻿using XorusCalendarBot.Database;
 using XorusCalendarBot.Module.Calendar;
 
 namespace XorusCalendarBot.Security;

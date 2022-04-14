@@ -10,7 +10,7 @@ public static class EventOccurenceBuilder
 
     public static EventOccurrence CreateFromICal(this Occurrence occurrence, Instance instance)
     {
-        var source = ((CalendarEvent)occurrence.Source);
+        var source = (CalendarEvent)occurrence.Source;
         var summary = source.Summary;
         if (summary != null && summary.StartsWith(EventCommandPrefix))
             summary = summary[EventCommandPrefix.Length..];
@@ -18,8 +18,8 @@ public static class EventOccurenceBuilder
         var forcedMessage = description != null && description.StartsWith(EventMessageCommandPrefix)
             ? description[EventMessageCommandPrefix.Length..]
             : null;
-        
-        return new EventOccurrence()
+
+        return new EventOccurrence
         {
             StartTime = occurrence.Period.StartTime.Value.ToUniversalTime(),
             EndTime = occurrence.Period.EndTime.Value.ToUniversalTime(),

@@ -26,7 +26,7 @@ public class CalendarEntity
     public int NextSentence { get; set; } = 0;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-    public List<EventOccurrence> NextOccurrences { get; set; } = new List<EventOccurrence>();
+    public List<EventOccurrence> NextOccurrences { get; set; } = new();
 
     public DateTime? LastRefresh { get; set; }
 
@@ -37,7 +37,7 @@ public class CalendarEntity
             Sentences = new List<string>
             {
                 "Date formats: <d> <D> <t> <T> <f> <F> <R>",
-                "Hey @Role, the thing is at <t>!",
+                "Hey @Role, the thing is at <t>!"
             }
         };
     }

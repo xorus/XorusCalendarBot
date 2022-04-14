@@ -7,7 +7,7 @@ public class EventOccurrence
     public DateTime NotifyTime { get; init; }
     public string? Summary { get; init; }
     public string? Description { get; init; }
-    
+
     // might desync with the actual sent message (only for web client preview purposes)
     public string? Message { get; set; }
     public bool IsForced { get; init; } = false;

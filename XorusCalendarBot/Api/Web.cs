@@ -13,11 +13,6 @@ public class Web : IDisposable
 {
     private readonly WebServer _server;
 
-    public static Task Serializer(IHttpContext context, object? data)
-    {
-        return context.SendStringAsync(JsonConvert.SerializeObject(data), "application/json", Encoding.UTF8);
-    }
-
     public Web(DependencyContainer container, List<IModule> modules)
     {
         var env = container.Resolve<Env>();
@@ -34,10 +29,7 @@ public class Web : IDisposable
                 m => m.WithController(() => new UserController().WithContainer(container)));
         if (env.StaticHtmlPath != null)
             _server.WithStaticFolder("/", env.StaticHtmlPath, false);
-        foreach (var module in modules)
-        {
-            module.RegisterControllers(_server);
-        }
+        foreach (var module in modules) module.RegisterControllers(_server);
 
         // Listen for state changes.
         _server.StateChanged += (s, e) => $"Now {e.NewState}".Info("WebServer");
@@ -48,5 +40,10 @@ public class Web : IDisposable
     {
         _server.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    public static Task Serializer(IHttpContext context, object? data)
+    {
+        return context.SendStringAsync(JsonConvert.SerializeObject(data), "application/json", Encoding.UTF8);
     }
 }

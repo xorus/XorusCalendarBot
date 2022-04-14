@@ -11,7 +11,6 @@ public class CalendarModule : Base.Module
 {
     private readonly InstanceDictionary _instanceDictionary;
     public readonly ILiteCollection<CalendarEntity> CalendarEntityCollection;
-    public event EventHandler? CalendarEntitiesUpdated;
 
     public CalendarModule(DependencyContainer container) : base(container)
     {
@@ -24,6 +23,8 @@ public class CalendarModule : Base.Module
         Container.Register(_instanceDictionary);
         _instanceDictionary.Init();
     }
+
+    public event EventHandler? CalendarEntitiesUpdated;
 
     protected override void ApplyMigration(int toVersion)
     {

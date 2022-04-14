@@ -1,15 +1,12 @@
 ﻿using Swan.DependencyInjection;
-using XorusCalendarBot.Database;
-using XorusCalendarBot.Discord;
 using XorusCalendarBot.Module.Calendar.Cal;
 
 namespace XorusCalendarBot.Module.Calendar;
 
 public class Instance : IDisposable
 {
-    private readonly DiscordNotifier _discordNotifier;
-    public CalendarEntity CalendarEntity { get; private set; }
     private readonly CalendarSync _calendarSync;
+    private readonly DiscordNotifier _discordNotifier;
     public readonly DependencyContainer Container;
 
     public Instance(DependencyContainer container, CalendarEntity calendarEntity)
@@ -24,6 +21,15 @@ public class Instance : IDisposable
         _calendarSync.Updated += (_, _) => _discordNotifier.RegisterJobs();
     }
 
+    public CalendarEntity CalendarEntity { get; private set; }
+
+    public void Dispose()
+    {
+        _discordNotifier.Dispose();
+        _calendarSync.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
     public void Replace(CalendarEntity calendarEntity)
     {
         CalendarEntity = calendarEntity;
@@ -34,13 +40,6 @@ public class Instance : IDisposable
     {
         CalendarEntity = calendarEntity;
         await RefreshAsync();
-    }
-
-    public void Dispose()
-    {
-        _discordNotifier.Dispose();
-        _calendarSync.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     private void Refresh()

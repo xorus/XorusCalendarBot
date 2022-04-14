@@ -29,10 +29,7 @@ public class UserController : BaseController
                     Channels = channels
                         .Where(c =>
                         {
-                            if (c is not SocketCategoryChannel && c is not SocketTextChannel)
-                            {
-                                return false;
-                            }
+                            if (c is not SocketCategoryChannel && c is not SocketTextChannel) return false;
 
                             var perms = botUser.GetPermissions(c);
                             return perms.ViewChannel && perms.SendMessages;
@@ -40,24 +37,20 @@ public class UserController : BaseController
                         .Select(y =>
                         {
                             if (y is SocketCategoryChannel)
-                            {
-                                return new ChannelInfo()
+                                return new ChannelInfo
                                 {
                                     Id = y.Id.ToString(),
                                     Name = y.Name,
                                     Category = true
                                 };
-                            }
 
                             if (y is SocketTextChannel)
-                            {
-                                return new ChannelInfo()
+                                return new ChannelInfo
                                 {
                                     Id = y.Id.ToString(),
                                     Name = "#" + y.Name.ToLower().RemoveAccents(),
                                     Category = false
                                 };
-                            }
 
                             throw new Exception("Unexpected channel type " + y.GetType().Name);
                         })

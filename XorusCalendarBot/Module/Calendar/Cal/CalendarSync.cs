@@ -1,15 +1,14 @@
 ﻿using FluentScheduler;
 using Ical.Net.CalendarComponents;
 using Swan.Logging;
-using XorusCalendarBot.Discord;
 
 namespace XorusCalendarBot.Module.Calendar.Cal;
 
 public sealed class CalendarSync : IDisposable
 {
-    private readonly string _refreshJobName;
+    private const string Name = "CalendarSync";
     private readonly Instance _instance;
-    private CalendarEntity CalendarEntity => _instance.CalendarEntity;
+    private readonly string _refreshJobName;
     private bool _started;
 
     public CalendarSync(Instance instance)
@@ -18,6 +17,8 @@ public sealed class CalendarSync : IDisposable
         _refreshJobName = "refresh-calendar-" + CalendarEntity.Id;
     }
 
+    private CalendarEntity CalendarEntity => _instance.CalendarEntity;
+
     private Ical.Net.Calendar Calendar { get; set; } = new();
 
     public void Dispose()
@@ -25,12 +26,10 @@ public sealed class CalendarSync : IDisposable
         StopAutoRefresh();
     }
 
-    private const string Name = "CalendarSync";
-
     public async Task Refresh()
     {
         if (CalendarEntity.CalendarUrl.Length == 0) return;
-        
+
         "Refreshing calendar".Info(Name);
         using var http = new HttpClient();
         try

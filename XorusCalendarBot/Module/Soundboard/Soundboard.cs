@@ -10,8 +10,8 @@ namespace XorusCalendarBot.Module.Soundboard;
 
 public class Soundboard : Base.Module
 {
-    public readonly ILiteCollection<SoundEntity> SoundCollection;
     private readonly LiteDatabase _db;
+    public readonly ILiteCollection<SoundEntity> SoundCollection;
 
     public Soundboard(DependencyContainer container) : base(container)
     {

@@ -105,10 +105,7 @@ public class DiscordNotifier : IDisposable
     private async Task<IMessageChannel> GetChannel(ulong channelId)
     {
         var channel = await _instance.Container.Resolve<DiscordManager>().DiscordClient.GetChannelAsync(channelId);
-        if (channel is not IMessageChannel messageChannel)
-        {
-            throw new NotFoundException();
-        }
+        if (channel is not IMessageChannel messageChannel) throw new NotFoundException();
 
         return messageChannel;
     }

@@ -29,28 +29,30 @@ public class DiscordManager
 
     private static Task Log(LogMessage msg)
     {
+        var message = msg.Severity + " " + msg.Message;
+        var source = $"Discord/{msg.Source}";
         switch (msg.Severity)
         {
             case LogSeverity.Critical:
-                (msg.Severity + " " + msg).Fatal("Discord");
+                message.Fatal(source);
                 break;
             case LogSeverity.Error:
-                (msg.Severity + " " + msg).Error("Discord");
+                message.Error(source);
                 break;
             case LogSeverity.Warning:
-                (msg.Severity + " " + msg).Warn("Discord");
+                message.Warn(source);
                 break;
             case LogSeverity.Info:
-                (msg.Severity + " " + msg).Info("Discord");
+                message.Info(source);
                 break;
             case LogSeverity.Verbose:
-                (msg.Severity + " " + msg).Debug("Discord");
+                message.Debug(source);
                 break;
             case LogSeverity.Debug:
-                (msg.Severity + " " + msg).Trace("Discord");
+                message.Trace(source);
                 break;
             default:
-                (msg.Severity + " " + msg).Info("Discord");
+                message.Info(source);
                 break;
         }
 

@@ -10,34 +10,36 @@ namespace XorusCalendarBot.Module.Calendar;
 public class CalendarModule : Base.Module
 {
     private readonly InstanceDictionary _instanceDictionary;
-    public readonly ILiteCollection<CalendarEntity> CalendarEntityCollection = null!;
-    private readonly LiteDatabase _db;
+    public readonly ILiteCollection<CalendarEntity> CalendarEntityCollection;
     public event EventHandler? CalendarEntitiesUpdated;
-
-    private int DbVersion
-    {
-        get => (int)_db.Pragma("MODULE_CALENDAR_VERSION");
-        set => _db.Pragma("MODULE_CALENDAR_VERSION", value);
-    }
 
     public CalendarModule(DependencyContainer container) : base(container)
     {
-        _instanceDictionary = new InstanceDictionary(container);
-        container.Register(_instanceDictionary);
-        container.Register(this);
-        _instanceDictionary.Init();
-
-        _db = container.Resolve<DatabaseManager>().Database;
         Migrate();
-        CalendarEntityCollection = _db.GetCollection<CalendarEntity>("calendars");
+        CalendarEntityCollection = Container.Resolve<DatabaseManager>().Database
+            .GetCollection<CalendarEntity>("calendars");
+
+        Container.Register(this);
+        _instanceDictionary = new InstanceDictionary(Container);
+        Container.Register(_instanceDictionary);
+        _instanceDictionary.Init();
     }
 
-    private void Migrate()
+    protected override void ApplyMigration(int toVersion)
     {
-        if (DbVersion == 0)
-        {
-            DbVersion = 1;
-        }
+        Console.WriteLine("Apply migration to " + toVersion);
+        // var adminId = _container.Resolve<Env>().DiscordAdminId;
+        //
+        // var userCollection = db.GetCollection<BsonDocument>("users");
+        // var docs = userCollection.FindAll();
+        // foreach (var bsonDocument in docs)
+        // {
+        //     if (bsonDocument.ContainsKey("DiscordId") && adminId == bsonDocument["DiscordId"].AsString)
+        //     {
+        //         bsonDocument["IsAdmin"] = new BsonValue(true);
+        //         userCollection.Update(bsonDocument);
+        //     }
+        // }
     }
 
     public override void RegisterControllers(WebServer server)
@@ -69,5 +71,15 @@ public class CalendarModule : Base.Module
             .Where(c => user.Guilds.Contains(c.GuildId))
             .OrderBy(c => c.CreatedAt)
             .ToList();
+    }
+
+    protected override string GetName()
+    {
+        return "calendar";
+    }
+
+    protected override int GetSchemaVersion()
+    {
+        return 0;
     }
 }

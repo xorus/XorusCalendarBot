@@ -5,18 +5,20 @@ using EmbedIO.WebApi;
 using Newtonsoft.Json;
 using Swan.DependencyInjection;
 using Swan.Logging;
+using XorusCalendarBot.Module.Base;
 
 namespace XorusCalendarBot.Api;
 
 public class Web : IDisposable
 {
     private readonly WebServer _server;
+
     public static Task Serializer(IHttpContext context, object? data)
     {
         return context.SendStringAsync(JsonConvert.SerializeObject(data), "application/json", Encoding.UTF8);
     }
 
-    public Web(DependencyContainer container, List<Module.Base.Module> modules)
+    public Web(DependencyContainer container, List<IModule> modules)
     {
         var env = container.Resolve<Env>();
         _server = new WebServer(o => o.WithUrlPrefix($"http://{env.ListenUrl}").WithMode(HttpListenerMode.EmbedIO))
@@ -38,7 +40,7 @@ public class Web : IDisposable
         }
 
         // Listen for state changes.
-        _server.StateChanged += (s, e) => $"WebServer New State - {e.NewState}".Info();
+        _server.StateChanged += (s, e) => $"Now {e.NewState}".Info("WebServer");
         _server.RunAsync();
     }
 

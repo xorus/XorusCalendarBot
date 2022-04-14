@@ -56,7 +56,9 @@ public class InstanceDictionary : IDisposable
 
     private void Update()
     {
-        CreateInstances(_container.Resolve<CalendarModule>().CalendarEntityCollection.FindAll());
+        CreateInstances(
+            _container.Resolve<CalendarModule>()
+                .CalendarEntityCollection.FindAll());
     }
 
     public void Dispose()

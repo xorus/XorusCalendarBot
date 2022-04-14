@@ -6,6 +6,7 @@ using XorusCalendarBot.Database;
 using XorusCalendarBot.Discord;
 using XorusCalendarBot.Module.Base;
 using XorusCalendarBot.Module.Calendar;
+using XorusCalendarBot.Module.Soundboard;
 
 DiscordManager discord;
 JobManager.Initialize();
@@ -18,7 +19,11 @@ discord = new DiscordManager(serviceContainer);
 discord.Connect();
 serviceContainer.Register(discord);
 
-var modules = new List<Module> { new CalendarModule(serviceContainer) };
+var modules = new List<IModule>
+{
+    new CalendarModule(serviceContainer),
+    // new Soundboard(serviceContainer)
+};
 var web = new Web(serviceContainer, modules);
 
 AppDomain.CurrentDomain.ProcessExit += (_, _) =>

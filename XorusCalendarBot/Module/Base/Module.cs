@@ -1,4 +1,5 @@
-﻿using EmbedIO;
+﻿using System.Runtime.CompilerServices;
+using EmbedIO;
 using Swan.DependencyInjection;
 using Swan.Logging;
 using XorusCalendarBot.Database;
@@ -23,17 +24,17 @@ public abstract class Module : IModule
     protected void Migrate()
     {
         var dbm = Container.Resolve<DatabaseManager>();
-        var version = dbm.GetModuleVersion(GetName(), GetSchemaVersion());
+        var version = dbm.GetModuleVersion(GetName().ToLowerInvariant(), GetSchemaVersion());
         $"{GetName()} db={version}".Debug($"Module/{GetName()}");
         for (var i = version; i < GetSchemaVersion(); i++)
         {
             $"Migrating {GetName()}: {GetSchemaVersion()} => {i}".Info($"Module/{GetName()}");
             ApplyMigration(i);
-            dbm.SetModuleVersion(GetName(), i);
+            dbm.SetModuleVersion(GetName().ToLowerInvariant(), i);
         }
     }
 
-    protected abstract string GetName();
+    public abstract string GetName();
     protected abstract int GetSchemaVersion();
     protected abstract void ApplyMigration(int toVersion);
 }

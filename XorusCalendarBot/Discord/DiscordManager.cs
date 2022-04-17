@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using Swan.DependencyInjection;
 using Swan.Logging;
+using XorusCalendarBot.Database;
 
 namespace XorusCalendarBot.Discord;
 
@@ -30,6 +31,12 @@ public class DiscordManager
     private static Task Log(LogMessage msg)
     {
         var message = msg.Severity + " " + msg.Message;
+        if (msg.Exception != null)
+        {
+            message += " " + msg.Exception.Message;
+            Logger.Error(message + "\n" + msg.Exception.ToString(), $"Discord/{msg.Source}");
+        }
+
         var source = $"Discord/{msg.Source}";
         switch (msg.Severity)
         {
@@ -63,6 +70,13 @@ public class DiscordManager
     {
         await DiscordClient.LoginAsync(TokenType.Bot, _container.Resolve<Env>().DiscordBotToken);
         await DiscordClient.StartAsync();
+
+        DiscordClient.GuildAvailable += guild =>
+        {
+            $"New guild available: {guild.Name} ({guild.Id})".Info("DiscordManager");
+            return Task.CompletedTask;
+        };
+
         // DiscordClient.Ready += () => Task.CompletedTask;
 
         // var slash = DiscordClient.UseSlashCommands(new SlashCommandsConfiguration
@@ -108,6 +122,33 @@ public class DiscordManager
     {
         return DiscordClient.Guilds.ToDictionary<SocketGuild?, ulong, IGuild>(g => g.Id, g => g);
     }
+
+    public SocketGuild? GetGuild(IChannel channel)
+    {
+        return (from discordClientGuild in DiscordClient.Guilds
+            from socketGuildChannel in discordClientGuild.Channels
+            where socketGuildChannel.Equals(channel)
+            select discordClientGuild).FirstOrDefault();
+    }
+
+    // public void PrefetchGuilds()
+    // {
+    //     foreach (var user in _container.Resolve<DatabaseManager>().Users.FindAll())
+    //     {
+    //         foreach (var userGuild in user.Guilds)
+    //         {
+    //             var guild = DiscordClient.Guild(ulong.Parse(userGuild));
+    //             if (guild == null)
+    //             {
+    //                 $"Could not fetch guild {userGuild}".Error(nameof(DiscordManager));
+    //             }
+    //             else
+    //             {
+    //                 $"Fetched guild {guild.Id}".Info(nameof(DiscordManager));
+    //             }
+    //         }
+    //     }
+    // }
 
     public void DisconnectSync()
     {

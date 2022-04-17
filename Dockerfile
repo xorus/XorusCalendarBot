@@ -27,4 +27,10 @@ COPY --from=web-build /src/Web/out /web
 ENV STATIC_HTML_PATH /web
 ENV DB_PATH /app/database.db
 
+RUN apt-get update &&\
+    apt-get install -y libopus0 libopus-dev libsodium23 libsodium-dev && \
+    apt-get clean autoclean && \
+    apt-get autoremove --yes && \
+    rm -rf /var/lib/{apt,dpkg,cache,log}/
+
 ENTRYPOINT ["dotnet", "XorusCalendarBot.dll"]

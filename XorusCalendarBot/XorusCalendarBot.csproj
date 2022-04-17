@@ -13,6 +13,7 @@
         <PackageReference Include="EmbedIO" Version="3.4.3"/>
         <PackageReference Include="EmbedIO.BearerToken" Version="3.4.2"/>
         <PackageReference Include="FluentScheduler" Version="5.5.1"/>
+        <PackageReference Include="FuzzySharp" Version="2.0.2"/>
         <PackageReference Include="Ical.Net" Version="4.2.0"/>
         <PackageReference Include="ksemenenko.ColorThief" Version="1.1.1.4"/>
         <PackageReference Include="LiteDB" Version="5.0.11"/>
@@ -21,4 +22,14 @@
         <PackageReference Include="YamlDotNet" Version="11.2.1"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ContentWithTargetPath Include="../Natives/libopus.dll" Condition=" '$(OS)' == 'Windows_NT' ">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>opus.dll</TargetPath>
+        </ContentWithTargetPath>
+        <ContentWithTargetPath Include="../Natives/libsodium.dll" Condition=" '$(OS)' == 'Windows_NT' ">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>libsodium.dll</TargetPath>
+        </ContentWithTargetPath>
+    </ItemGroup>
 </Project>

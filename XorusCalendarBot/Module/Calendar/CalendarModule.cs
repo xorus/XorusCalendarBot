@@ -78,9 +78,9 @@ public class CalendarModule : Base.Module
             .ToList();
     }
 
-    protected override string GetName()
+    public sealed override string GetName()
     {
-        return "calendar";
+        return "Calendar";
     }
 
     protected override int GetSchemaVersion()

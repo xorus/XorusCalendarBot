@@ -10,11 +10,13 @@ public class DiscordNotifier : IDisposable
 {
     private readonly DiscordManager _discord;
     private readonly Instance _instance;
+    private readonly CalendarModule _module;
 
     public DiscordNotifier(Instance instance)
     {
         _instance = instance;
         _discord = instance.Container.Resolve<DiscordManager>();
+        _module = instance.Container.Resolve<CalendarModule>();
     }
 
     public void Dispose()
@@ -72,7 +74,8 @@ public class DiscordNotifier : IDisposable
         }
         catch (NotFoundException)
         {
-            ("Channel " + _instance.CalendarEntity.ReminderChannel + "does not exist").Error();
+            ("Channel " + _instance.CalendarEntity.ReminderChannel + "does not exist")
+                .Error($"{_module.GetName()}/DiscordNotifier");
             return;
         }
 

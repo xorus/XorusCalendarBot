@@ -1,24 +1,29 @@
 ﻿using EmbedIO;
+using EmbedIO.BearerToken;
 using EmbedIO.WebApi;
 using LiteDB;
 using Swan.DependencyInjection;
+using Swan.Logging;
 using XorusCalendarBot.Api;
 using XorusCalendarBot.Database;
 using XorusCalendarBot.Module.Soundboard.Entity;
 
 namespace XorusCalendarBot.Module.Soundboard;
 
-public class Soundboard : Base.Module
+public class SoundboardModule : Base.Module
 {
     private readonly LiteDatabase _db;
     public readonly ILiteCollection<SoundEntity> SoundCollection;
+    private readonly DiscordCommand _command;
 
-    public Soundboard(DependencyContainer container) : base(container)
+    public SoundboardModule(DependencyContainer container) : base(container)
     {
+        "Initializing soundboard module".Info(GetName());
         Container.Register(this);
         _db = Container.Resolve<DatabaseManager>().Database;
         Migrate();
         SoundCollection = _db.GetCollection<SoundEntity>("sounds");
+        _command = new DiscordCommand(Container);
     }
 
     public override void Dispose()
@@ -28,8 +33,10 @@ public class Soundboard : Base.Module
 
     public override void RegisterControllers(WebServer server)
     {
-        server.WithWebApi("/api/soundboard", Web.Serializer,
-            m => m.WithController(() => new SoundboardController().WithContainer(Container)));
+        server
+            .WithBearerToken("/api/soundboard", Container.Resolve<Env>().Secret)
+            .WithWebApi("/api/soundboard", Web.Serializer,
+                m => m.WithController(() => new SoundboardController().WithContainer(Container)));
     }
 
     public List<SoundEntity> GetUserSounds(UserEntity user)
@@ -41,9 +48,9 @@ public class Soundboard : Base.Module
         ).ToList();
     }
 
-    protected override string GetName()
+    public sealed override string GetName()
     {
-        return "soundboard";
+        return "Soundboard";
     }
 
     protected override int GetSchemaVersion()

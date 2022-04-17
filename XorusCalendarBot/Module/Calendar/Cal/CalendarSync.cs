@@ -6,7 +6,7 @@ namespace XorusCalendarBot.Module.Calendar.Cal;
 
 public sealed class CalendarSync : IDisposable
 {
-    private const string Name = "CalendarSync";
+    private readonly string _name;
     private readonly Instance _instance;
     private readonly string _refreshJobName;
     private bool _started;
@@ -15,6 +15,7 @@ public sealed class CalendarSync : IDisposable
     {
         _instance = instance;
         _refreshJobName = "refresh-calendar-" + CalendarEntity.Id;
+        _name = instance.Container.Resolve<CalendarModule>().GetName() + "/" + "CalendarSync";
     }
 
     private CalendarEntity CalendarEntity => _instance.CalendarEntity;
@@ -30,7 +31,7 @@ public sealed class CalendarSync : IDisposable
     {
         if (CalendarEntity.CalendarUrl.Length == 0) return;
 
-        "Refreshing calendar".Info(Name);
+        "Refreshing calendar".Info(_name);
         using var http = new HttpClient();
         try
         {
@@ -91,7 +92,7 @@ public sealed class CalendarSync : IDisposable
         }
         catch (HttpRequestException e)
         {
-            ("Cannot refresh " + CalendarEntity.CalendarUrl + " " + e.Message).Error(Name);
+            ("Cannot refresh " + CalendarEntity.CalendarUrl + " " + e.Message).Error(_name);
         }
     }
 
